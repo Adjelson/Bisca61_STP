@@ -1,5 +1,7 @@
 # Bisca 61 — Multijogador
-
+<p align="center">
+  <img src="foto/bisca61ADJ.png" alt="Tela de login" width="900">
+</p>
 ## Estrutura de Ficheiros
 
 ```
