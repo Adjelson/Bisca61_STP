@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <title>Bisca 61</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Lora:ital,wght@0,400;0,600&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Lora', serif;
+      background: #1a1a1a;
+      color: #f2e8ce;
+      user-select: none
+    }
+
+    :root {
+      --gold: #d4a843;
+      --gold2: #f0c96a;
+      --cream: #f2e8ce;
+      --red: #c0392b;
+      --green: #27ae60;
+      --cw: 68px;
+      --ch: 98px;
+    }
+
+    /* ══ LAYOUT ══ */
+    #game-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background:
+        radial-gradient(ellipse 60% 60% at 50% 50%, #2a2a2a 0%, #111 100%);
+    }
+
+    /* ══ MESA REDONDA ══ */
+    #table {
+      position: relative;
+      width: min(72vw, 72vh, 520px);
+      height: min(72vw, 72vh, 520px);
+      border-radius: 50%;
+      /* Mesa de madeira */
+      background:
+        radial-gradient(ellipse 80% 80% at 40% 35%, rgba(255, 255, 255, .07) 0%, transparent 60%),
+        repeating-linear-gradient(88deg, transparent 0px, transparent 18px, rgba(0, 0, 0, .07) 18px, rgba(0, 0, 0, .07) 20px),
+        repeating-linear-gradient(2deg, transparent 0px, transparent 28px, rgba(0, 0, 0, .05) 28px, rgba(0, 0, 0, .05) 30px),
+        linear-gradient(160deg, #7a4a20 0%, #5c3410 30%, #8b5a2b 55%, #4a2a0a 80%, #6b3f18 100%);
+      box-shadow:
+        0 0 0 8px #3a1f08,
+        0 0 0 14px #5c3410,
+        0 0 0 18px #2a1206,
+        0 20px 60px rgba(0, 0, 0, .8),
+        inset 0 2px 8px rgba(255, 255, 255, .06);
+      flex-shrink: 0;
+    }
+
+    /* marca d'água */
+    #table::after {
+      content: 'BISCA 61';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 2rem;
+      color: rgba(255, 255, 255, .04);
+      letter-spacing: 6px;
+      pointer-events: none;
+    }
+
+    /* ══ ZONA DAS CARTAS JOGADAS ══ */
+    #played-zone {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 30%;
+    }
+
+    /* ══ BARALHO + TRUNFO ══ */
+    #deck-area {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+    }
+
+    .deck-pile {
+      position: relative;
+      width: var(--cw);
+      height: var(--ch)
+    }
+
+    .deck-pile .card {
+      position: absolute;
+      top: 0;
+      left: 0
+    }
+
+    #deck-count {
+      font-family: 'Cinzel Decorative';
+      font-size: .55rem;
+      color: var(--gold);
+      text-align: center;
+      margin-top: 3px;
+      letter-spacing: 1px;
+    }
+
+    .trump-label {
+      font-size: .55rem;
+      color: var(--gold2);
+      text-align: center;
+      margin-bottom: 3px;
+      letter-spacing: 1px;
+      font-family: 'Cinzel Decorative'
+    }
+
+    /* ══ AVATARES ══ */
+    .avatar {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      pointer-events: none;
+    }
+
+    .av-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, .55);
+      border: 2.5px solid rgba(255, 255, 255, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .5);
+      transition: border-color .25s;
+    }
+
+    .av-circle.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 14px rgba(212, 168, 67, .6), 0 4px 12px rgba(0, 0, 0, .5)
+    }
+
+    .av-name {
+      font-size: .55rem;
+      color: var(--cream);
+      background: rgba(0, 0, 0, .7);
+      padding: 1px 7px;
+      border-radius: 8px;
+      white-space: nowrap;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .av-pts {
+      font-size: .5rem;
+      color: var(--gold2);
+      background: rgba(0, 0, 0, .6);
+      padding: 1px 6px;
+      border-radius: 6px
+    }
+
+    .team-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 3px
+    }
+
+    .td-a {
+      background: #27ae60
+    }
+
+    .td-b {
+      background: #2980b9
+    }
+
+    /* avatar positions (relative to table) */
+    /* top */
+    #av-top {
+      top: -72px;
+      left: 50%;
+      transform: translateX(-50%)
+    }
+
+    /* left */
+    #av-left {
+      left: -72px;
+      top: 50%;
+      transform: translateY(-50%)
+    }
+
+    /* right */
+    #av-right {
+      right: -72px;
+      top: 50%;
+      transform: translateY(-50%)
+    }
+
+    /* ══ MÃO DO JOGADOR ══ */
+    #my-hand-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0 10px;
+    }
+
+    #my-name-bar {
+      font-family: 'Cinzel Decorative';
+      font-size: .6rem;
+      color: var(--cream);
+      background: rgba(0, 0, 0, .6);
+      padding: 3px 14px;
+      border-radius: 12px;
+      letter-spacing: 1px;
+    }
+
+    #my-hand {
+      display: flex;
+      gap: -4px;
+      justify-content: center;
+      min-height: calc(var(--ch)+16px);
+      align-items: flex-end;
+      padding: 4px 8px
+    }
+
+    /* ══ CARTAS ══ */
+    .card {
+      width: var(--cw);
+      height: var(--ch);
+      border-radius: 8px;
+      border: 1.5px solid rgba(255, 255, 255, .15);
+      cursor: default;
+      position: relative;
+      flex-shrink: 0;
+      transition: transform .18s cubic-bezier(.34, 1.56, .64, 1), box-shadow .18s;
+      transform-origin: bottom center;
+    }
+
+    .card.playable {
+      cursor: pointer
+    }
+
+    .card.playable:hover {
+      transform: translateY(-18px) scale(1.06);
+      box-shadow: 0 18px 32px rgba(0, 0, 0, .65);
+      z-index: 10;
+    }
+
+    .card.sel {
+      transform: translateY(-22px) scale(1.08) !important;
+      box-shadow: 0 0 0 3px var(--gold), 0 18px 32px rgba(212, 168, 67, .5) !important;
+      z-index: 11;
+    }
+
+    .card.dealt {
+      animation: dealAnim .3s cubic-bezier(.34, 1.56, .64, 1)
+    }
+
+    @keyframes dealAnim {
+      from {
+        opacity: 0;
+        transform: scale(.5) translateY(30px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .card.played-anim {
+      animation: playedAnim .25s ease
+    }
+
+    @keyframes playedAnim {
+      from {
+        opacity: 0;
+        transform: scale(.6) translateY(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* fan layout for hand */
+    #my-hand .card:nth-child(1) {
+      margin-left: 0
+    }
+
+    #my-hand .card+.card {
+      margin-left: -18px
+    }
+
+    #my-hand .card.playable:hover {
+      margin-left: -10px;
+      margin-right: 8px
+    }
+
+    .cf {
+      width: 100%;
+      height: 100%;
+      border-radius: 7px;
+      background: #f5eed8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cf.r {
+      color: #c0392b
+    }
+
+    .cf.b {
+      color: #1a1a2e
+    }
+
+    .corner {
+      position: absolute;
+      font-size: .58rem;
+      font-weight: 700;
+      line-height: 1.1;
+      font-family: 'Lora', serif
+    }
+
+    .corner.tl {
+      top: 3px;
+      left: 4px
+    }
+
+    .corner.br {
+      bottom: 3px;
+      right: 4px;
+      transform: rotate(180deg)
+    }
+
+    .suit-big {
+      font-size: 1.7rem;
+      line-height: 1
+    }
+
+    .cbk {
+      width: 100%;
+      height: 100%;
+      border-radius: 7px;
+      background: linear-gradient(150deg, #1a2a6c 0%, #b21f1f 48%, #c8961c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cbk-in {
+      width: 78%;
+      height: 78%;
+      border: 1.5px solid rgba(255, 255, 255, .2);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel Decorative';
+      font-size: .4rem;
+      color: rgba(255, 255, 255, .4);
+      letter-spacing: 1px;
+    }
+
+    /* trunfo card no baralho fica virado */
+    .trump-exposed {
+      border-color: rgba(212, 168, 67, .5) !important;
+      box-shadow: 0 0 10px rgba(212, 168, 67, .3) !important
+    }
+
+    /* borda verde da mão */
+    #my-hand-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      border: 2px solid rgba(39, 174, 96, .35);
+      pointer-events: none;
+    }
+
+    /* swap btn */
+    .swap-btn {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: .42rem;
+      color: var(--gold);
+      cursor: pointer;
+      background: rgba(0, 0, 0, .75);
+      padding: 2px 7px;
+      border-radius: 3px;
+      border: 1px solid rgba(212, 168, 67, .4);
+      white-space: nowrap;
+      z-index: 20;
+      transition: background .12s;
+    }
+
+    .swap-btn:hover {
+      background: rgba(212, 168, 67, .2)
+    }
+
+    /* ══ HUD: info topo ══ */
+    #hud {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(0, 0, 0, .65);
+      border: 1px solid rgba(212, 168, 67, .18);
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: .6rem;
+      white-space: nowrap;
+    }
+
+    .hi {
+      color: var(--cream);
+      opacity: .8
+    }
+
+    .hi b {
+      color: var(--gold)
+    }
+
+    /* ══ TOAST ══ */
+    #toast {
+      position: absolute;
+      top: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, .88);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Cinzel Decorative';
+      font-size: .62rem;
+      padding: 6px 20px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+      z-index: 50;
+      white-space: nowrap;
+    }
+
+    #toast.on {
+      opacity: 1
+    }
+
+    /* ══ OVERLAY MODAL ══ */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    #overlay.on {
+      display: flex
+    }
+
+    .modal {
+      background: #0f2016;
+      border: 2px solid var(--gold);
+      border-radius: 14px;
+      padding: 28px 36px;
+      text-align: center;
+      min-width: 290px;
+      max-width: 380px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: popIn .28s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(.75)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .modal h2 {
+      font-family: 'Cinzel Decorative';
+      color: var(--gold);
+      font-size: 1.2rem
+    }
+
+    .modal-body {
+      color: var(--cream);
+      font-size: .9rem;
+      line-height: 1.7
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap
+    }
+
+    .btn {
+      font-family: 'Cinzel Decorative';
+      font-size: .72rem;
+      letter-spacing: 2px;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--gold), #a07828);
+      color: #0b1a10;
+      box-shadow: 0 3px 12px rgba(212, 168, 67, .25);
+      transition: transform .12s, box-shadow .12s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 168, 67, .45)
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      box-shadow: none
+    }
+
+    .btn.ghost:hover {
+      background: rgba(212, 168, 67, .1)
+    }
+
+    .score-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+      color: var(--cream)
+    }
+
+    .score-tbl th {
+      color: var(--gold);
+      font-family: 'Cinzel Decorative';
+      font-size: .55rem;
+      padding: 4px 8px;
+      border-bottom: 1px solid rgba(212, 168, 67, .2)
+    }
+
+    .score-tbl td {
+      padding: 5px 8px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, .05)
+    }
+
+    .score-tbl tr.winner td {
+      color: var(--gold2)
+    }
+
+    .score-tbl tr:last-child td {
+      border: none
+    }
+
+    /* hint */
+    #hint {
+      position: absolute;
+      bottom: calc(var(--ch) + 72px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Cinzel Decorative';
+      font-size: .55rem;
+      color: var(--gold2);
+      background: rgba(0, 0, 0, .55);
+      padding: 3px 14px;
+      border-radius: 10px;
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="game-wrap">
+    <div id="hud">
+      <span class="hi">Ronda <b id="hud-round">1</b></span>
+      <span class="hi">Baralho <b id="hud-deck">40</b></span>
+      <span class="hi">Trunfo <b id="hud-trump">–</b></span>
+      <span class="hi" id="hud-score">–</span>
+    </div>
+
+    <!-- Mesa -->
+    <div id="table">
+      <!-- Avatares serão injectados aqui -->
+      <!-- Cartas jogadas -->
+      <div id="played-zone"></div>
+      <!-- Baralho + trunfo -->
+      <div id="deck-area">
+        <div style="text-align:center">
+          <div class="trump-label">TRUNFO</div>
+          <div id="trump-card-wrap"></div>
+        </div>
+        <div style="text-align:center">
+          <div class="deck-pile" id="deck-pile"></div>
+          <div id="deck-count">– cartas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hint -->
+    <div id="hint">Selecione uma carta</div>
+
+    <!-- Mão do jogador -->
+    <div id="my-hand-wrap">
+      <div id="my-name-bar">Você</div>
+      <div id="my-hand"></div>
+    </div>
+  </div>
+
+  <!-- Overlay modal -->
+  <div id="overlay">
+    <div class="modal" id="modal">
+      <h2 id="modal-title">–</h2>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-btns" id="modal-btns"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    'use strict';
+    // ═══════════════════════════════════════════
+    //  CONSTANTES
+    // ═══════════════════════════════════════════
+    const SUITS = ['S', 'H', 'D', 'C'];
+    const SYM = { S: '\u2660', H: '\u2665', D: '\u2666', C: '\u2663' };
+    const COL = { S: 'b', H: 'r', D: 'r', C: 'b' };
+    const SUIT_COLOR_CSS = { S: '#aad4ff', H: '#e74c3c', D: '#e74c3c', C: '#aad4ff' };
+    // Ordem de força (index menor = carta mais forte)
+    const ORDER = {
+      S: ['A', '5', 'K', 'J', 'Q', '7', '6', '4', '3', '2'],
+      C: ['A', '5', 'K', 'J', 'Q', '7', '6', '4', '3', '2'],
+      H: ['A', '5', 'K', 'J', 'Q', '2', '3', '4', '6', '7'],
+      D: ['A', '5', 'K', 'J', 'Q', '2', '3', '4', '6', '7'],
+    };
+    const PTS = { A: 11, 5: 10, K: 4, J: 3, Q: 2, 7: 0, 6: 0, 4: 0, 3: 0, 2: 0 };
+    const RANKS = ['A', '5', 'K', 'J', 'Q', '7', '6', '4', '3', '2'];
+    const AVATARS = ['🎩', '😎', '🤠', '👑', '🦁', '🐯', '⚡', '🃏'];
+
+    // ═══════════════════════════════════════════
+    //  ESTADO
+    // ═══════════════════════════════════════════
+    let token = '', user = null, roomCode = '', mySlot = 0, numPlayers = 2, isHost = false;
+    let gs = null, prevHash = '';
+    let selCard = -1;
+    let pollTimer = null, toastTimer = null;
+
+    // ═══════════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════════
+    function init() {
+      token = localStorage.getItem('b61_token') || '';
+      const u = localStorage.getItem('b61_user');
+      const g = sessionStorage.getItem('b61_game');
+      if (!token || !u || !g) { window.location.href = 'index.html'; return; }
+      user = JSON.parse(u);
+      const info = JSON.parse(g);
+      roomCode = info.roomCode; mySlot = info.mySlot;
+      numPlayers = info.numPlayers; isHost = info.isHost;
+      document.getElementById('my-name-bar').textContent = user.username;
+      startPoll();
+    }
+
+    // ═══════════════════════════════════════════
+    //  POLLING
+    // ═══════════════════════════════════════════
+    function startPoll() { clearInterval(pollTimer); pollTimer = setInterval(poll, 1600); }
+    function stopPoll() { clearInterval(pollTimer); pollTimer = null; }
+
+    async function poll() {
+      const res = await api('estado_sala', { codigo: roomCode }, 'GET');
+      if (!res || res.erro) return;
+      if (res.sala.estado === 'aguardando') { window.location.href = 'lobby.html'; return; }
+      if (!res.jogo) return;
+      const h = stateHash(res.jogo);
+      if (h !== prevHash) { prevHash = h; gs = res.jogo; renderGame(); }
+    }
+
+    function stateHash(g) { return (g.round || 0) + '_' + (g.currentSlot || 0) + '_' + (g.table || []).length + '_' + (g.done ? '1' : '0') + '_' + JSON.stringify(g.roundPts || []); }
+
+    // ═══════════════════════════════════════════
+    //  CONSTRUIR ESTADO
+    // ═══════════════════════════════════════════
+    function criarBaralho() { return SUITS.flatMap(s => RANKS.map(r => ({ s, r, p: PTS[r] }))); }
+    function embaralhar(a) { for (let i = a.length - 1; i > 0; i--) { const j = 0 | Math.random() * (i + 1);[a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+    // ═══════════════════════════════════════════
+    //  RENDERIZAÇÃO
+    // ═══════════════════════════════════════════
+    function renderGame() {
+      if (!gs) return;
+      renderAvatares();
+      renderPlayed();
+      renderDeck();
+      renderHud();
+      renderMyHand();
+      renderHint();
+      if (gs.done) { stopPoll(); setTimeout(() => endRound(), 600); }
+      if (gs.log) { toast(gs.log); gs.log = ''; }
+    }
+
+    /* ── Avatares ── */
+    function renderAvatares() {
+      // remove old
+      document.querySelectorAll('.avatar').forEach(e => e.remove());
+      if (!gs.players) return;
+      // map: bottom=mySlot, top=(mySlot+2)%n ou (mySlot+1)%n em 2p, left/right em 4p
+      const n = gs.numPlayers;
+      const positions = n === 2
+        ? [{ slot: (mySlot + 1) % 2, pos: 'top' }]
+        : [
+          { slot: (mySlot + 2) % 4, pos: 'top' },
+          { slot: (mySlot + 3) % 4, pos: 'left' },
+          { slot: (mySlot + 1) % 4, pos: 'right' },
+        ];
+      positions.forEach(({ slot, pos }) => {
+        const p = gs.players.find(x => x.slot === slot);
+        if (!p) return;
+        const isAct = gs.currentSlot === slot;
+        const teamColor = n === 4 ? (slot % 2 === 0 ? '#27ae60' : '#2980b9') : 'transparent';
+        const av = document.createElement('div');
+        av.className = 'avatar';
+        av.id = 'av-' + pos;
+        av.innerHTML = `
+      <div class="av-circle${isAct ? ' active' : ''}">${AVATARS[p.avatar - 1] || '🎩'}</div>
+      <div class="av-name">
+        ${n === 4 ? `<span class="team-dot" style="background:${teamColor}"></span>` : ''}
+        ${p.name}
+      </div>
+      <div class="av-pts">${gs.roundPts[slot] || 0} pts</div>`;
+        document.getElementById('table').appendChild(av);
+      });
+    }
+
+    /* ── Cartas jogadas ── */
+    function renderPlayed() {
+      const el = document.getElementById('played-zone');
+      el.innerHTML = '';
+      (gs.table || []).forEach(({ slot, card }) => {
+        const div = document.createElement('div');
+        div.className = 'card played-anim';
+        div.innerHTML = cardFaceHTML(card);
+        el.appendChild(div);
+      });
+    }
+
+    /* ── Baralho + Trunfo ── */
+    function renderDeck() {
+      const dc = document.getElementById('deck-count');
+      const dp = document.getElementById('deck-pile');
+      const tc = document.getElementById('trump-card-wrap');
+      const deckLen = (gs.deck || []).length;
+      dc.textContent = deckLen + ' cartas';
+      // pilha de cartas viradas
+      dp.innerHTML = '';
+      if (deckLen > 0) {
+        const c = document.createElement('div'); c.className = 'card';
+        c.innerHTML = '<div class="cbk"><div class="cbk-in">B61</div></div>';
+        dp.appendChild(c);
+        if (deckLen > 1) { const c2 = document.createElement('div'); c2.className = 'card'; c2.style.cssText = 'position:absolute;top:2px;left:2px;z-index:-1'; c2.innerHTML = '<div class="cbk"><div class="cbk-in">B61</div></div>'; dp.appendChild(c2); }
+      }
+      // carta do trunfo (virada para cima, perpendicular)
+      tc.innerHTML = '';
+      if (gs.trumpCard) {
+        // Regra Boló: nas últimas 5 rodadas o último trunfo mantém-se
+        const bolo = gs.bolo;
+        const c = document.createElement('div');
+        c.className = 'card trump-exposed' + (bolo ? ' bolo' : '');
+        c.style.cssText = deckLen > 0 ? 'transform:rotate(90deg);transform-origin:center center' : '';
+        c.innerHTML = cardFaceHTML(gs.trumpCard);
+        tc.appendChild(c);
+        const lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:.48rem;color:var(--gold2);text-align:center;margin-top:3px;font-family:\'Cinzel Decorative\'';
+        lbl.textContent = bolo ? 'BOLÓ' : '';
+        tc.appendChild(lbl);
+      }
+    }
+
+    /* ── HUD ── */
+    function renderHud() {
+      document.getElementById('hud-round').textContent = gs.round || 1;
+      document.getElementById('hud-deck').textContent = (gs.deck || []).length;
+      const ts = gs.trumpSuit;
+      document.getElementById('hud-trump').innerHTML = `<span style="color:${SUIT_COLOR_CSS[ts]}">${SYM[ts]}</span>`;
+      const n = gs.numPlayers;
+      let scoreText = '';
+      if (n === 4) {
+        const ta = (gs.roundPts[0] || 0) + (gs.roundPts[2] || 0);
+        const tb = (gs.roundPts[1] || 0) + (gs.roundPts[3] || 0);
+        scoreText = `A:<b>${ta}</b> B:<b>${tb}</b>`;
+      } else {
+        scoreText = `Pts: <b>${gs.roundPts[mySlot] || 0}</b>`;
+      }
+      document.getElementById('hud-score').innerHTML = scoreText;
+    }
+
+    /* ── Mão do jogador ── */
+    function renderMyHand() {
+      const el = document.getElementById('my-hand');
+      const isAct = gs.currentSlot === mySlot && gs.phase === 'play';
+      const hand = gs.hands[mySlot] || [];
+      el.innerHTML = '';
+      hand.forEach((card, i) => {
+        const div = document.createElement('div');
+        div.className = 'card' + (i === 0 ? ' dealt' : '');
+        div.innerHTML = cardFaceHTML(card);
+        if (isAct) {
+          div.classList.add('playable');
+          if (selCard === i) div.classList.add('sel');
+          div.onclick = () => clickCard(i);
+        }
+        // Troca do 7 — antes de jogar, se for o 7 do naipe trunfo
+        const canSwap = isAct && card.r === '7' && card.s === gs.trumpSuit && (gs.deck || []).length > 0 && !gs.bolo;
+        if (canSwap) {
+          const sw = document.createElement('div');
+          sw.className = 'swap-btn';
+          sw.textContent = '\u21c4 Trocar pelo Trunfo';
+          sw.onclick = e => { e.stopPropagation(); trocar7(i) };
+          div.appendChild(sw);
+        }
+        el.appendChild(div);
+      });
+    }
+
+    /* ── Hint ── */
+    function renderHint() {
+      const el = document.getElementById('hint');
+      if (!gs || gs.phase !== 'play') { el.textContent = ''; return; }
+      if (gs.currentSlot === mySlot) {
+        el.textContent = selCard >= 0 ? 'Clique novamente para confirmar' : 'Selecione uma carta';
+      } else {
+        const p = gs.players ? gs.players.find(x => x.slot === gs.currentSlot) : null;
+        el.textContent = (p ? p.name : 'Outro jogador') + ' está a jogar\u2026';
+      }
+    }
+
+    /* ── Card HTML ── */
+    function cardFaceHTML(card) {
+      const cl = COL[card.s];
+      const sym = SYM[card.s];
+      return `<div class="cf ${cl}">
+    <div class="corner tl">${card.r}<br>${sym}</div>
+    <div class="suit-big">${sym}</div>
+    <div class="corner br">${card.r}<br>${sym}</div>
+  </div>`;
+    }
+
+    // ═══════════════════════════════════════════
+    //  LÓGICA DO JOGO
+    // ═══════════════════════════════════════════
+
+    /* bate(cand, curr, trumpSuit, leadSuit) → boolean */
+    function bate(cand, curr, trump, lead) {
+      const cs = forca(cand, trump, lead), cu = forca(curr, trump, lead);
+      if (!cs) return false;
+      if (!cu) return true;
+      if (cs.t && !cu.t) return true;
+      if (!cs.t && cu.t) return false;
+      return cs.r < cu.r; // menor índice = carta mais forte
+    }
+    function forca(card, trump, lead) {
+      if (card.s === trump) return { t: true, r: ORDER[trump].indexOf(card.r) };
+      if (card.s === lead) return { t: false, r: ORDER[lead].indexOf(card.r) };
+      return null; // não conta
+    }
+
+    /* Acção: clicar numa carta */
+    function clickCard(i) {
+      if (!gs || gs.currentSlot !== mySlot || gs.phase !== 'play') return;
+      if (selCard === i) { jogar(i); selCard = -1; }
+      else { selCard = i; renderMyHand(); }
+    }
+
+    async function jogar(i) {
+      const g = clonar(gs);
+      const card = g.hands[mySlot].splice(i, 1)[0];
+      g.table.push({ slot: mySlot, card });
+      selCard = -1;
+      if (g.table.length === g.numPlayers) resolverVaza(g);
+      else g.currentSlot = (mySlot + 1) % g.numPlayers;
+      await salvar(g);
+    }
+
+    async function trocar7(i) {
+      const g = clonar(gs);
+      // Jogador troca o 7 do naipe trunfo pela carta trunfo no fundo do baralho
+      const seteTrunfo = g.hands[mySlot][i];
+      const cartaTrunfo = g.trumpCard;
+      g.hands[mySlot][i] = cartaTrunfo;
+      g.trumpCard = seteTrunfo;
+      // Também colocar o 7 no fundo do baralho (posição do trunfo)
+      if (g.deck.length > 0) g.deck[g.deck.length - 1] = seteTrunfo; // substitui no fundo
+      toast('Trocou o 7 pelo Trunfo!');
+      await salvar(g);
+    }
+
+    /* Resolver vaza */
+    function resolverVaza(g) {
+      const lead = g.table[0].card.s;
+      let best = g.table[0];
+      g.table.forEach(e => { if (bate(e.card, best.card, g.trumpSuit, lead)) best = e; });
+      const winner = best.slot;
+      const tpts = g.table.reduce((s, e) => s + e.card.p, 0);
+      g.roundPts[winner] = (g.roundPts[winner] || 0) + tpts;
+      g.leadSlot = winner; g.currentSlot = winner;
+      g.log = nomePorSlot(g, winner) + ' ganhou a vaza (+' + tpts + ' pts)';
+      g.table = [];
+      g.round = (g.round || 1) + 1;
+
+      // ── Puxar cartas (1 por jogador, a partir do vencedor) ──
+      if (g.deck.length > 0) {
+        const n = Math.min(g.numPlayers, g.deck.length);
+        for (let i = 0; i < n; i++) g.hands[(winner + i) % g.numPlayers].push(g.deck.pop());
+      }
+
+      // ── Boló: Último Trunfo nas últimas 5 rodadas ──
+      // Quando só restam 5 rodadas E o trunfo ainda está no baralho → activar boló
+      const remainingTricks = g.hands[0] ? g.hands[0].length : 0;
+      if (remainingTricks <= 5 && g.deck.length === 0 && !g.bolo) {
+        // verificar se há ainda uma carta de trunfo em jogo
+        const hasTrumpInHand = g.hands.some(h => h.some(c => c.s === g.trumpSuit));
+        if (hasTrumpInHand) g.bolo = true;
+      }
+
+      // Verificar fim
+      if (!g.hands.some(h => h.length > 0)) g.done = true;
+    }
+
+    function nomePorSlot(g, slot) {
+      const p = g.players ? g.players.find(x => x.slot === slot) : null;
+      return p ? p.name : 'J' + (slot + 1);
+    }
+
+    async function salvar(g) {
+      gs = g; renderGame();
+      await api('atualizar_estado', { codigo: roomCode, estado: g });
+    }
+
+    function clonar(o) { return JSON.parse(JSON.stringify(o)); }
+
+    // ═══════════════════════════════════════════
+    //  FIM DA RONDA
+    // ═══════════════════════════════════════════
+    function endRound() {
+      const g = gs;
+      const n = g.numPlayers;
+      let titulo = '', bodyHTML = '', resultados = [];
+
+      if (n === 4) {
+        // duplas: equipa A = slots 0&2, equipa B = slots 1&3
+        const ta = (g.roundPts[0] || 0) + (g.roundPts[2] || 0);
+        const tb = (g.roundPts[1] || 0) + (g.roundPts[3] || 0);
+        const capote = ta === 120 || tb === 120;
+        const winTeam = ta >= tb ? 'A' : 'B';
+        const winPts = Math.max(ta, tb);
+        // Pontuação do match (equipa):
+        // 61-90 → +2, 91+ → +4, capote → +44
+        let mp = capote ? 44 : winPts >= 91 ? 4 : winPts >= 61 ? 2 : 0;
+        if (winTeam === 'A') { g.matchPts[0] = (g.matchPts[0] || 0) + mp; g.matchPts[2] = (g.matchPts[2] || 0) + mp; }
+        else { g.matchPts[1] = (g.matchPts[1] || 0) + mp; g.matchPts[3] = (g.matchPts[3] || 0) + mp; }
+        titulo = capote ? '&#127942; CAPOTE!' : 'Equipa ' + winTeam + ' venceu!';
+        bodyHTML = `
+      <table class="score-tbl">
+        <tr><th>Equipa</th><th>Pontos vaza</th><th>Match</th></tr>
+        <tr${ta > tb ? ' class="winner"' : ''}><td><span class="team-dot td-a"></span>A</td><td>${ta}</td><td>${g.matchPts[0]}</td></tr>
+        <tr${tb > ta ? ' class="winner"' : ''}><td><span class="team-dot td-b"></span>B</td><td>${tb}</td><td>${g.matchPts[1]}</td></tr>
+        ${capote ? `<tr><td colspan="3" style="color:var(--gold);text-align:center">Capote! +44 pts</td></tr>` : ''}
+      </table>`;
+        // guardar resultado
+        const ganharam = winTeam === 'A' ? [0, 2] : [1, 3];
+        g.players.forEach(p => resultados.push({ user_id: p.id, ganhou: ganharam.includes(p.slot), pts: ganharam.includes(p.slot) ? mp : 0 }));
+      } else {
+        const winner = g.roundPts.indexOf(Math.max(...g.roundPts));
+        const wp = g.roundPts[winner];
+        const capote = wp === 120;
+        // solo: 61-90 → +1, 91+ → +2, capote → +44
+        let mp = capote ? 44 : wp >= 91 ? 2 : wp >= 61 ? 1 : 0;
+        g.matchPts[winner] = (g.matchPts[winner] || 0) + mp;
+        titulo = capote ? '&#127942; CAPOTE!' : nomePorSlot(g, winner) + ' venceu!';
+        bodyHTML = `
+      <table class="score-tbl">
+        <tr><th>Jogador</th><th>Pontos vaza</th><th>Match</th></tr>
+        ${g.players.map((p, i) => `<tr${i === winner ? ' class="winner"' : ''}><td>${p.name}</td><td>${g.roundPts[i] || 0}</td><td>${g.matchPts[i] || 0}</td></tr>`).join('')}
+        ${capote ? `<tr><td colspan="3" style="color:var(--gold);text-align:center">Capote! +44 pts</td></tr>` : ''}
+      </table>`;
+        g.players.forEach(p => resultados.push({ user_id: p.id, ganhou: p.slot === winner, pts: p.slot === winner ? mp : 0 }));
+      }
+
+      // guardar resultado no servidor
+      api('guardar_resultado', { codigo: roomCode, resultados });
+
+      showModal(titulo, bodyHTML, [
+        { l: 'Nova Ronda', f: async () => { hideModal(); await novaRonda(g); } },
+        { l: 'Sair', f: () => { hideModal(); sairJogo(); }, ghost: true }
+      ]);
+    }
+
+    async function novaRonda(prevGs) {
+      if (!isHost) return; // só o host reinicia
+      const g = criarBaralho(); // rebuilds via construirEstado below
+      const novoGs = construirEstadoNovo(prevGs.numPlayers, prevGs.players, prevGs.matchPts);
+      await api('atualizar_estado', { codigo: roomCode, estado: novoGs });
+      await api('iniciar_jogo', { token, codigo: roomCode, estado: novoGs });
+      gs = novoGs; startPoll(); renderGame();
+    }
+
+    function construirEstadoNovo(n, players, matchPts) {
+      const deck = embaralhar(criarBaralho());
+      const hands = Array.from({ length: n }, () => []);
+      for (let i = 0; i < 5; i++) for (let p = 0; p < n; p++) hands[p].push(deck.pop());
+      const trumpCard = deck[deck.length - 1];
+      return {
+        deck, hands, trumpSuit: trumpCard.s, trumpCard, table: [], leadSlot: 0, currentSlot: 0,
+        roundPts: Array(n).fill(0), matchPts: matchPts || Array(n).fill(0),
+        round: 1, phase: 'play', numPlayers: n, players, done: false, log: '', bolo: false
+      };
+    }
+
+    function embaralhar(a) { for (let i = a.length - 1; i > 0; i--) { const j = 0 | Math.random() * (i + 1);[a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function criarBaralho() { return SUITS.flatMap(s => RANKS.map(r => ({ s, r, p: PTS[r] }))); }
+
+    async function sairJogo() {
+      await api('sair_sala', { token, codigo: roomCode });
+      window.location.href = 'lobby.html';
+    }
+
+    // ═══════════════════════════════════════════
+    //  MODAL / TOAST
+    // ═══════════════════════════════════════════
+    function showModal(title, body, btns) {
+      document.getElementById('modal-title').innerHTML = title;
+      document.getElementById('modal-body').innerHTML = body;
+      const bc = document.getElementById('modal-btns'); bc.innerHTML = '';
+      btns.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = 'btn' + (b.ghost ? ' ghost' : '');
+        btn.textContent = b.l; btn.onclick = b.f;
+        bc.appendChild(btn);
+      });
+      document.getElementById('overlay').classList.add('on');
+    }
+    function hideModal() { document.getElementById('overlay').classList.remove('on'); }
+
+    function toast(m) {
+      const el = document.getElementById('toast');
+      el.textContent = m; el.classList.add('on');
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 2400);
+    }
+
+    // ═══════════════════════════════════════════
+    //  API
+    // ═══════════════════════════════════════════
+    async function api(action, data = {}, method = 'POST') {
+      try {
+        if (method === 'GET') {
+          const r = await fetch('api.php?action=' + action + '&' + new URLSearchParams(data));
+          return await r.json();
+        }
+        const r = await fetch('api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, ...data })
+        });
+        return await r.json();
+      } catch (e) { return { erro: 'Sem ligação' }; }
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
