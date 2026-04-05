@@ -29,7 +29,8 @@
       "Bash(node -e \"console.log\\(require\\('c:/xampp/htdocs/Bisca61_STP/bisca61/node_modules/typescript/package.json'\\).version\\)\")",
       "Bash(node -e \"console.log\\(require\\('c:/xampp/htdocs/Bisca61_STP/bisca61/packages/server/node_modules/typescript/package.json'\\).version\\)\")",
       "Bash(node -e \"console.log\\(require\\('c:/xampp/htdocs/Bisca61_STP/bisca61/packages/shared/node_modules/typescript/package.json'\\).version\\)\")",
-      "Bash(printf 'EXPO_PUBLIC_API_URL=http://192.168.178.41:3001\\\\nEXPO_PUBLIC_WS_URL=http://192.168.178.41:3001\\\\nREACT_NATIVE_PACKAGER_HOSTNAME=192.168.178.41\\\\n')"
+      "Bash(printf 'EXPO_PUBLIC_API_URL=http://192.168.178.41:3001\\\\nEXPO_PUBLIC_WS_URL=http://192.168.178.41:3001\\\\nREACT_NATIVE_PACKAGER_HOSTNAME=192.168.178.41\\\\n')",
+      "Bash(node -e \"const p = require\\('./node_modules/expo-av/package.json'\\); console.log\\(p.version, Object.keys\\(p.exports||{}\\).slice\\(0,5\\)\\)\")"
     ]
   }
 }

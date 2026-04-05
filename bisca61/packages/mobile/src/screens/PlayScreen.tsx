@@ -9,6 +9,7 @@ import type { RootStackParamList } from '../../App'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import { useGameSocket } from '../hooks/useGameSocket'
+import { useSounds } from '../hooks/useSounds'
 import { mapError } from '../utils/errors'
 import { ScoreBar }    from '../components/ScoreBar'
 import { TrumpArea }   from '../components/TrumpArea'
@@ -29,11 +30,47 @@ export default function PlayScreen({ route, navigation }: Props) {
   const gameState  = useGameStore(s => s.gameState)
   const room       = useGameStore(s => s.room)
   const isMyTurn   = useGameStore(s => s.isMyTurn)
+  const resetGame  = useGameStore(s => s.reset)
 
   const [summary,  setSummary]  = useState<GameSummary | null>(null)
   const [playing,  setPlaying]  = useState(false)
   const [paused,   setPaused]   = useState(false)
   const [gameErr,  setGameErr]  = useState<string | null>(null)
+  const [muted,    setMutedState] = useState(false)
+
+  const {
+    playCardPlay, playTrickWin, playTrickLose,
+    playYourTurn, playGameWin, playGameLose,
+    playButtonTap, playSwap7,
+    setMuted,
+  } = useSounds()
+
+  function toggleMute() {
+    const next = !muted
+    setMutedState(next)
+    setMuted(next)
+  }
+
+  // Your-turn ping
+  const prevIsMyTurn = useRef(false)
+  useEffect(() => {
+    if (isMyTurn && !prevIsMyTurn.current) playYourTurn()
+    prevIsMyTurn.current = isMyTurn
+  }, [isMyTurn])
+
+  // Trick result sound: watch trickNumber changes
+  const prevTrickNumber = useRef<number>(-1)
+  useEffect(() => {
+    if (!gameState) return
+    const tn = gameState.trickNumber
+    if (tn > prevTrickNumber.current && prevTrickNumber.current >= 0 && gameState.lastTrick) {
+      const myTeamLocal = gameState.teams[0].includes(userId!) ? 0 : 1
+      const winnerTeam  = gameState.teams[0].includes(gameState.lastTrick.winnerUserId) ? 0 : 1
+      if (winnerTeam === myTeamLocal) playTrickWin()
+      else                            playTrickLose()
+    }
+    prevTrickNumber.current = tn
+  }, [gameState?.trickNumber])
 
   // Animate the turn banner when it becomes your turn
   const turnAnim = useRef(new Animated.Value(0)).current
@@ -51,7 +88,12 @@ export default function PlayScreen({ route, navigation }: Props) {
 
   const { playCard, swap7 } = useGameSocket({
     code,
-    onGameEnded: (s) => setSummary(s),
+    onGameEnded: (s) => {
+      setSummary(s)
+      const mt = gameState?.teams[0].includes(userId!) ? 0 : 1
+      if (s.winnerTeam === mt) playGameWin()
+      else if (s.winnerTeam !== -1) playGameLose()
+    },
     onError: (msg) => setGameErr(mapError(msg)),
   })
 
@@ -59,28 +101,38 @@ export default function PlayScreen({ route, navigation }: Props) {
     if (!isMyTurn || playing || paused) return
     setPlaying(true)
     setGameErr(null)
+    playCardPlay()
     const err = await playCard(card)
     setPlaying(false)
     if (err) setGameErr(mapError(err))
-  }, [isMyTurn, playing, paused, playCard])
+  }, [isMyTurn, playing, paused, playCard, playCardPlay])
 
   const handleSwap = useCallback(async () => {
     if (paused) return
     setGameErr(null)
+    playSwap7()
     const err = await swap7()
     if (err) setGameErr(mapError(err))
-  }, [paused, swap7])
+  }, [paused, swap7, playSwap7])
 
+  // Called from the header exit button (game not paused) — shows a confirmation Alert
   function confirmLeave() {
-    setPaused(false)
+    playButtonTap()
     Alert.alert(
       'Sair da partida',
       'Tens a certeza? A partida continuará sem ti.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Sair', style: 'destructive', onPress: () => navigation.replace('Lobby') },
+        { text: 'Sair', style: 'destructive', onPress: () => { resetGame(); navigation.replace('Lobby') } },
       ],
     )
+  }
+
+  // Called from inside the Pause modal — no Alert needed, modal is already a confirmation
+  function leaveFromPause() {
+    setPaused(false)
+    resetGame()
+    navigation.replace('Lobby')
   }
 
   if (!gameState) {
@@ -94,14 +146,16 @@ export default function PlayScreen({ route, navigation }: Props) {
   const myTeam       = gameState.teams[0].includes(userId!) ? 0 : 1
   const opponents    = gameState.playerIds.filter(id => id !== userId)
 
-  // Swap 7: disponível para QUALQUER jogador quando:
-  //   • é a sua vez
-  //   • a carta de trunfo está visível (trumpCard != null)
-  //   • tem o 7 do naipe de trunfo atual na mão
+  // Swap 7: disponível quando:
+  //   • é a vez do jogador
+  //   • a carta de trunfo visível existe E é do naipe de trunfo atual
+  //     (ex: 7 de Copas só troca por outra carta de Copas)
+  //   • o jogador tem o 7 do naipe de trunfo atual na mão
   //   • o jogo não está em pausa
   const canSwap = isMyTurn
     && !paused
     && gameState.trumpCard !== null
+    && gameState.trumpCard.s === gameState.trumpSuit
     && gameState.hand.some(c => c.r === '7' && c.s === gameState.trumpSuit)
 
   // "Last trump" = deck is empty (no more draws — endgame)
@@ -129,7 +183,10 @@ export default function PlayScreen({ route, navigation }: Props) {
       <View style={s.header}>
         <Text style={s.roomCode}>{code}</Text>
         <View style={s.headerBtns}>
-          <TouchableOpacity style={s.pauseBtn} onPress={() => setPaused(true)}>
+          <TouchableOpacity style={s.pauseBtn} onPress={toggleMute}>
+            <Text style={s.pauseBtnIcon}>{muted ? '🔇' : '🔊'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.pauseBtn} onPress={() => { playButtonTap(); setPaused(true) }}>
             <Text style={s.pauseBtnIcon}>⏸</Text>
             <Text style={s.pauseBtnLabel}>Pausa</Text>
           </TouchableOpacity>
@@ -246,7 +303,7 @@ export default function PlayScreen({ route, navigation }: Props) {
                 </View>
               </>
             )}
-            <TouchableOpacity style={s.modalBtn} onPress={() => { setSummary(null); navigation.replace('Lobby') }}>
+            <TouchableOpacity style={s.modalBtn} onPress={() => { setSummary(null); resetGame(); navigation.replace('Lobby') }}>
               <Text style={s.modalBtnText}>Voltar ao Lobby</Text>
             </TouchableOpacity>
           </View>
@@ -264,7 +321,7 @@ export default function PlayScreen({ route, navigation }: Props) {
               <Text style={s.modalBtnText}>▶  Continuar a jogar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[s.modalBtn, s.leaveModalBtn]} onPress={confirmLeave}>
+            <TouchableOpacity style={[s.modalBtn, s.leaveModalBtn]} onPress={leaveFromPause}>
               <Text style={s.modalBtnText}>← Sair da Partida</Text>
             </TouchableOpacity>
           </View>

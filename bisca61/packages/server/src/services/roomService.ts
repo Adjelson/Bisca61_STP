@@ -147,8 +147,10 @@ export async function getRoomInfo(code: string): Promise<RoomInfo | null> {
 }
 
 export async function listOpenRooms(): Promise<RoomInfo[]> {
+  const cutoff = new Date(Date.now() - 60 * 60 * 1000) // ignore rooms older than 1 hour
+
   const rooms = await prisma.room.findMany({
-    where: { status: 'waiting' },
+    where: { status: 'waiting', createdAt: { gte: cutoff } },
     include: INCLUDE_PLAYERS,
     orderBy: { createdAt: 'desc' },
     take: 20,

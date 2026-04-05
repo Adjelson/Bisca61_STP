@@ -80,12 +80,24 @@ export function registerRoomHandlers(io: IO, socket: Sock) {
     }
   })
 
-  // Handle disconnection — notify room
+  // Handle disconnection — only remove player from WAITING rooms (not playing games)
   socket.on('disconnect', async () => {
-    // Find rooms this socket was in and notify
     const rooms = Array.from(socket.rooms).filter(r => r !== socket.id)
     for (const code of rooms) {
-      io.to(code).emit('player:left', userId)
+      try {
+        const info = await getRoomInfo(code)
+        if (!info) continue
+
+        if (info.status === 'waiting') {
+          // Remove from lobby — if room empties it gets deleted
+          const updated = await leaveRoom(code, userId)
+          if (updated) io.to(code).emit('room:updated', updated)
+        }
+        // Always notify clients so they can update presence indicators
+        io.to(code).emit('player:left', userId)
+      } catch {
+        io.to(code).emit('player:left', userId)
+      }
     }
   })
 }

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import * as SecureStore from 'expo-secure-store'
 import { Platform } from 'react-native'
+import { disconnectSocket } from '../socket/socketClient'
 
 const TOKEN_KEY = 'bisca61_token'
 
@@ -41,6 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ userId, username, avatar, isLoggedIn: true }),
 
   logout: async () => {
+    disconnectSocket()
     await deleteToken()
     set({ userId: null, username: null, avatar: 1, isLoggedIn: false })
   },

@@ -1,4 +1,5 @@
 {
     "prisma.pinToPrisma6": true,
-    "typescript.tsdk": "bisca61/packages/server/node_modules/typescript/lib"
+    "typescript.tsdk": "bisca61/packages/server/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
 }

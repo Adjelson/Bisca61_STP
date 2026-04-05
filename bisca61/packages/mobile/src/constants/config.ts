@@ -1,5 +1,5 @@
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.178.41:3001'
-export const WS_URL  = process.env.EXPO_PUBLIC_WS_URL  ?? 'http://192.168.178.41:3001'
+export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.178.40:3001'
+export const WS_URL  = process.env.EXPO_PUBLIC_WS_URL  ?? 'http://192.168.178.40:3001'
 
 export const SUIT_LABELS: Record<string, string> = {
   E: 'Espadas', C: 'Copas', O: 'Ouros', P: 'Paus',

@@ -119,6 +119,12 @@ export class BiscaEngine {
       throw new GameError('NO_TRUMP_CARD', 'No visible trump card to swap with')
     }
 
+    // A carta visível deve ser do mesmo naipe que o trunfo atual
+    // (7 de Copas só troca por carta de Copas)
+    if (state.trumpCard.s !== state.trumpSuit) {
+      throw new GameError('TRUMP_SUIT_MISMATCH', 'Trump card suit does not match current trump suit')
+    }
+
     const hand = state._hands[userId] ?? []
     const sevenOfTrump: Card = { s: state.trumpSuit, r: '7' }
     const sevenIdx = hand.findIndex(c => cardEquals(c, sevenOfTrump))

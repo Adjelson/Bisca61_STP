@@ -6,6 +6,7 @@ import type { RootStackParamList } from '../../App'
 import { useAuthStore, getToken } from '../store/authStore'
 import { API_URL, AVATAR_COLORS, THEME } from '../constants/config'
 import { mapError } from '../utils/errors'
+import { startAmbient, stopAmbient } from '../utils/ambientSound'
 import type { RoomInfo } from '../types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Lobby'>
@@ -19,6 +20,12 @@ export default function LobbyScreen({ navigation }: Props) {
   const [refreshing, setRefresh]    = useState(false)
   const [serverStatus, setStatus]   = useState<ServerStatus>('checking')
   const [createError, setCreateError] = useState<string | null>(null)
+
+  // Start ambient on entering Lobby; stop only when logging out (screen unmounts)
+  useEffect(() => {
+    startAmbient()
+    return () => { stopAmbient() }
+  }, [])
 
   const fetchRooms = useCallback(async () => {
     try {

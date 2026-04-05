@@ -4,6 +4,7 @@ export type GameErrorCode =
   | 'CARD_NOT_IN_HAND'
   | 'NO_TRUMP_CARD'
   | 'NO_SEVEN_OF_TRUMP'
+  | 'TRUMP_SUIT_MISMATCH'
   | 'ROOM_FULL'
   | 'ALREADY_STARTED'
   | 'NOT_HOST'

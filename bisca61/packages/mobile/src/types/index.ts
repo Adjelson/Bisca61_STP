@@ -12,6 +12,14 @@ export type GamePhase = 'waiting' | 'playing' | 'finished'
 
 export interface TablePlay { userId: number; card: Card }
 
+export interface TrickHistory {
+  winnerUserId: number
+  plays: TablePlay[]
+  points: number
+  prevTrumpSuit: Suit
+  newTrumpSuit: Suit
+}
+
 export interface GameState {
   phase: GamePhase
   playerCount: 2 | 4
@@ -28,6 +36,7 @@ export interface GameState {
   points: [number, number]
   tricks: [number, number]
   trickNumber: number
+  lastTrick: TrickHistory | null
   handCounts: Record<number, number>
   hand: Card[]
   allHands: Record<number, Card[]>

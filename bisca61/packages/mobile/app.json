@@ -5,6 +5,38 @@
     "version": "1.0.0",
     "sdkVersion": "51.0.0",
     "orientation": "portrait",
-    "platforms": ["ios", "android", "web"]
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "android": {
+      "package": "com.bisca61.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": []
+    },
+    "ios": {
+      "bundleIdentifier": "com.bisca61.app",
+      "buildNumber": "1"
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c7bbcd29-a1b1-495d-8b01-ba301ac6b012"
+      }
+    },
+    "owner": "adjelsonnito"
   }
 }

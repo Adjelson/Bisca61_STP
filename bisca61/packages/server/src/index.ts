@@ -6,6 +6,7 @@ import { config } from './config'
 import { prisma } from './db/prisma'
 import { registerSocketServer } from './socket/index'
 import { startPersistWorker } from './jobs/persistWorker'
+import { purgeExpiredSessions } from './services/session'
 import authRoutes from './http/auth'
 import roomRoutes from './http/rooms'
 import profileRoutes from './http/profile'
@@ -31,8 +32,9 @@ async function main() {
   await prisma.$connect()
   console.log('[Prisma] Connected to MySQL')
 
-  // 3. Start persist worker
+  // 3. Start persist worker + housekeeping
   startPersistWorker()
+  purgeExpiredSessions().catch(() => {}) // non-blocking
 
   // 4. Boot Fastify so fastify.server is ready
   await fastify.listen({ port: config.PORT, host: '0.0.0.0' })
