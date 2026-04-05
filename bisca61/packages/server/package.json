@@ -1,0 +1,33 @@
+{
+  "name": "@bisca61/server",
+  "version": "0.1.0",
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@bisca61/shared": "*",
+    "@fastify/cors": "9.0.1",
+    "@prisma/client": "5.14.0",
+    "bcryptjs": "^3.0.3",
+    "bullmq": "5.7.14",
+    "dotenv": "16.4.5",
+    "fastify": "4.27.0",
+    "ioredis": "5.3.2",
+    "socket.io": "4.7.5",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "20.14.10",
+    "prisma": "5.14.0",
+    "tsx": "4.16.2",
+    "typescript": "5.4.5"
+  }
+}

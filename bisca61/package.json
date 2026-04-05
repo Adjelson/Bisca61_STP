@@ -1,0 +1,11 @@
+{
+  "name": "bisca61",
+  "private": true,
+  "workspaces": ["packages/server", "packages/shared"],
+  "scripts": {
+    "dev:server": "npm -w @bisca61/server run dev",
+    "build:shared": "npm -w @bisca61/shared run build",
+    "test": "npm test --workspaces --if-present"
+  },
+  "engines": { "node": ">=20" }
+}

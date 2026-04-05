@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(24)
+  password  String   @db.VarChar(255) @map("senha")
+  avatar    Int      @default(1)
+  matchPts  Int      @default(0) @map("match_pts")
+  wins      Int      @default(0) @map("vitorias")
+  losses    Int      @default(0) @map("derrotas")
+  createdAt DateTime @default(now()) @map("criado_em")
+
+  sessions Session[]
+  slots    RoomPlayer[]
+
+  @@map("utilizadores")
+}
+
+model Session {
+  // 64-char hex string — crypto.randomBytes(32).toString('hex')
+  // Intentionally NOT a JWT: JWTs exceed MySQL VarChar(64) PK limits
+  token     String   @id @db.VarChar(64)
+  userId    Int      @map("user_id")
+  username  String   @db.VarChar(24)
+  avatar    Int      @default(1)
+  createdAt DateTime @default(now()) @map("criado_em")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessoes")
+}
+
+model Room {
+  id          Int        @id @default(autoincrement())
+  code        String     @unique @db.VarChar(6)
+  playerCount Int        @map("num_jogadores")
+  status      RoomStatus @default(waiting) @map("estado")
+  hostId      Int        @map("host_id")
+  createdAt   DateTime   @default(now()) @map("criado_em")
+
+  players   RoomPlayer[]
+  gameState GameStateRow?
+
+  @@map("salas")
+}
+
+enum RoomStatus {
+  waiting  @map("aguardando")
+  playing  @map("jogando")
+  finished @map("fim")
+}
+
+model RoomPlayer {
+  id       Int    @id @default(autoincrement())
+  roomCode String @map("sala_codigo") @db.VarChar(6)
+  userId   Int    @map("user_id")
+  username String @db.VarChar(24)
+  avatar   Int    @default(1)
+  slot     Int
+
+  room Room @relation(fields: [roomCode], references: [code], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([roomCode, slot])
+  @@unique([roomCode, userId])
+  @@index([roomCode])
+  @@map("jogadores")
+}
+
+model GameStateRow {
+  roomCode  String   @id @map("sala_codigo") @db.VarChar(6)
+  stateJson String   @map("estado_json") @db.MediumText
+  updatedAt DateTime @updatedAt @map("atualizado")
+
+  room Room @relation(fields: [roomCode], references: [code], onDelete: Cascade)
+
+  @@map("estado_jogo")
+}

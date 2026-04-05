@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(mysql -u root -e \"CREATE DATABASE IF NOT EXISTS bisca61_node CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Read(//c/xampp/mysql/bin/**)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"CREATE DATABASE IF NOT EXISTS bisca61_node CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(npx tsc:*)",
+      "Bash(ipconfig)",
+      "Bash(rm -rf node_modules .expo app src)",
+      "Bash(rm -f App.tsx app.json babel.config.js metro.config.js package.json tsconfig.json global.d.ts expo-env.d.ts .env.local)",
+      "Bash(curl -s http://localhost:3001/health)",
+      "Bash(npm run:*)",
+      "Bash(netsh advfirewall:*)",
+      "Bash(curl -s http://127.0.0.1:3001/health)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":3001\")",
+      "Bash(npx ts-node:*)",
+      "Bash(echo \"Server PID: $!\")",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(p.dependencies['react-native-web'] ?? 'NÃO INSTALADO'\\)\")",
+      "Bash(curl -s -X OPTIONS http://192.168.178.40:3001/api/auth/login -H 'Origin: http://localhost:8081' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: Content-Type' -D -)",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"TestWeb\",\"avatar\":1}')",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const b = require\\('bcryptjs'\\); console.log\\(typeof b.hash, typeof b.compare\\)\")",
+      "Bash(node -e ':*)",
+      "Bash(curl -s http://192.168.178.41:3001/health)",
+      "Bash(curl -s -X POST http://192.168.178.41:3001/api/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"username\\\\\":\\\\\"test\\\\\",\\\\\"password\\\\\":\\\\\"test\\\\\"}\")",
+      "Bash(node -e \"console.log\\(require\\('c:/xampp/htdocs/Bisca61_STP/bisca61/node_modules/typescript/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('c:/xampp/htdocs/Bisca61_STP/bisca61/packages/server/node_modules/typescript/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('c:/xampp/htdocs/Bisca61_STP/bisca61/packages/shared/node_modules/typescript/package.json'\\).version\\)\")",
+      "Bash(printf 'EXPO_PUBLIC_API_URL=http://192.168.178.41:3001\\\\nEXPO_PUBLIC_WS_URL=http://192.168.178.41:3001\\\\nREACT_NATIVE_PACKAGER_HOSTNAME=192.168.178.41\\\\n')"
+    ]
+  }
+}
