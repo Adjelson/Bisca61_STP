@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { THEME, SUIT_SYMBOLS } from '../constants/config'
+import { THEME, SUIT_SYMBOLS, COPYRIGHT, APP_AUTHOR } from '../constants/config'
 
 const SUITS = [
   { key: 'E', name: 'Espadas', color: THEME.text },
@@ -131,6 +131,8 @@ export default function RulesScreen() {
 
         <View style={s.footer}>
           <Text style={s.footerText}>Bisca 61 · Nova Manilha · Multijogador</Text>
+          <Text style={s.footerCopy}>{COPYRIGHT}</Text>
+          <Text style={s.footerBy}>Desenvolvido por {APP_AUTHOR}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -165,6 +167,8 @@ const s = StyleSheet.create({
 
   note:           { color: THEME.textMute, fontSize: 12, fontStyle: 'italic', marginTop: 4, lineHeight: 18 },
 
-  footer:         { alignItems: 'center', marginTop: 8 },
+  footer:         { alignItems: 'center', marginTop: 8, gap: 3 },
   footerText:     { color: THEME.textMute, fontSize: 12 },
+  footerCopy:     { color: THEME.textMute, fontSize: 11 },
+  footerBy:       { color: THEME.textMute, fontSize: 11 },
 })
