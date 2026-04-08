@@ -2,6 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# OpenSSL is required by Prisma on Alpine
+RUN apk add --no-cache openssl
+
 # Install deps (workspaces: shared + server)
 COPY package*.json ./
 COPY packages/shared/package*.json ./packages/shared/
@@ -25,6 +28,9 @@ RUN npm run build --workspace=packages/server
 FROM node:20-alpine
 WORKDIR /app
 
+# OpenSSL is required by Prisma on Alpine
+RUN apk add --no-cache openssl
+
 ENV NODE_ENV=production
 
 # Copy prisma schema first so postinstall's `prisma generate` finds it
@@ -41,5 +47,5 @@ COPY --from=builder /app/node_modules/.prisma  ./node_modules/.prisma
 
 EXPOSE 3001
 
-# Sync DB schema on every deploy (creates tables if missing, safe on reruns)
+# Sync DB schema on every deploy then start server
 CMD ["sh", "-c", "npx prisma db push --schema=packages/server/prisma/schema.prisma --skip-generate --accept-data-loss && node packages/server/dist/index.js"]
