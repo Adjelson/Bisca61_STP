@@ -27,7 +27,7 @@ export async function startAmbient(): Promise<void> {
     const { sound } = await Audio.Sound.createAsync(
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       require('../../assets/sounds/ambient_loop.wav') as number,
-      { shouldPlay: true, isLooping: true, volume: 0.25 },
+      { shouldPlay: true, isLooping: true, volume: 0.99 },
     )
     _sound = sound
   } catch {

@@ -101,7 +101,7 @@ export default function PlayScreen({ route, navigation }: Props) {
     if (!isMyTurn || playing || paused) return
     setPlaying(true)
     setGameErr(null)
-    playCardPlay()
+    void playCardPlay()
     const err = await playCard(card)
     setPlaying(false)
     if (err) setGameErr(mapError(err))
@@ -110,14 +110,20 @@ export default function PlayScreen({ route, navigation }: Props) {
   const handleSwap = useCallback(async () => {
     if (paused) return
     setGameErr(null)
-    playSwap7()
+    void playSwap7()
     const err = await swap7()
     if (err) setGameErr(mapError(err))
   }, [paused, swap7, playSwap7])
 
-  // Called from the header exit button (game not paused) — shows a confirmation Alert
+  function handlePause() {
+    setPaused(true)
+    // sound is fire-and-forget, isolated so it can't affect UI state
+    void playButtonTap()
+  }
+
+  // Header exit: show confirmation Alert (not inside a modal, so Alert works fine)
   function confirmLeave() {
-    playButtonTap()
+    void playButtonTap()
     Alert.alert(
       'Sair da partida',
       'Tens a certeza? A partida continuará sem ti.',
@@ -128,7 +134,7 @@ export default function PlayScreen({ route, navigation }: Props) {
     )
   }
 
-  // Called from inside the Pause modal — no Alert needed, modal is already a confirmation
+  // Pause modal exit: direct navigation, no Alert on top of another modal
   function leaveFromPause() {
     setPaused(false)
     resetGame()
@@ -186,7 +192,7 @@ export default function PlayScreen({ route, navigation }: Props) {
           <TouchableOpacity style={s.pauseBtn} onPress={toggleMute}>
             <Text style={s.pauseBtnIcon}>{muted ? '🔇' : '🔊'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.pauseBtn} onPress={() => { playButtonTap(); setPaused(true) }}>
+          <TouchableOpacity style={s.pauseBtn} onPress={handlePause}>
             <Text style={s.pauseBtnIcon}>⏸</Text>
             <Text style={s.pauseBtnLabel}>Pausa</Text>
           </TouchableOpacity>

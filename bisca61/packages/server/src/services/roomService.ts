@@ -4,13 +4,16 @@ import { BiscaEngine, GameError } from '@bisca61/shared'
 import { saveState } from './gameState'
 import type { RoomInfo } from '@bisca61/shared'
 
+// Explicit player row type so Prisma inference isn't required in strict mode
+type PlayerRow = { userId: number; username: string; avatar: number; slot: number }
+
 function toRoomInfo(room: {
   code: string
   playerCount: number
   status: string
   hostId: number
   createdAt: Date
-  players: Array<{ userId: number; username: string; avatar: number; slot: number }>
+  players: Array<PlayerRow>
 }): RoomInfo {
   return {
     code: room.code,
@@ -75,7 +78,7 @@ export async function joinRoom(
   if (room.status !== 'waiting') throw new GameError('ALREADY_STARTED', 'Game already started')
 
   // Already in room — return current state
-  const existing = room.players.find(p => p.userId === userId)
+  const existing = room.players.find((p: PlayerRow) => p.userId === userId)
   if (existing) return toRoomInfo(room)
 
   if (room.players.length >= room.playerCount) {
@@ -83,7 +86,7 @@ export async function joinRoom(
   }
 
   // Find next free slot
-  const usedSlots = new Set(room.players.map(p => p.slot))
+  const usedSlots = new Set(room.players.map((p: PlayerRow) => p.slot))
   let slot = 0
   while (usedSlots.has(slot)) slot++
 
@@ -104,7 +107,7 @@ export async function leaveRoom(code: string, userId: number): Promise<RoomInfo 
 
   await prisma.roomPlayer.deleteMany({ where: { roomCode: code, userId } })
 
-  const remaining = room.players.filter(p => p.userId !== userId)
+  const remaining = room.players.filter((p: PlayerRow) => p.userId !== userId)
 
   if (remaining.length === 0) {
     // Delete empty room
@@ -158,6 +161,6 @@ export async function listOpenRooms(): Promise<RoomInfo[]> {
 
   // Only return rooms with available slots
   return rooms
-    .filter(r => r.players.length < r.playerCount)
+    .filter((r: { players: unknown[]; playerCount: number }) => r.players.length < r.playerCount)
     .map(toRoomInfo)
 }
