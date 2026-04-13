@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Share } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { RootStackParamList } from '../../App'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import { useGameSocket } from '../hooks/useGameSocket'
-import { AVATAR_COLORS, THEME } from '../constants/config'
+import { THEME } from '../constants/config'
+import { PlayerAvatar } from '../components/PlayerAvatar'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Room'>
 
@@ -19,9 +21,10 @@ export default function RoomScreen({ route, navigation }: Props) {
   const [starting, setStarting]   = useState(false)
   const [copied,   setCopied]     = useState(false)
 
-  const { startGame } = useGameSocket({
+  const { startGame, leaveGame } = useGameSocket({
     code,
-    onGameEnded: () => {},
+    onGameEnded:     () => {},
+    onGameAbandoned: () => {},
     onError: (msg) => Alert.alert('Erro', msg),
   })
 
@@ -54,7 +57,10 @@ export default function RoomScreen({ route, navigation }: Props) {
   function handleLeave() {
     Alert.alert('Sair da Sala', 'Tens a certeza que queres sair?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Sair', style: 'destructive', onPress: () => { resetGame(); navigation.replace('Lobby') } },
+      {
+        text: 'Sair', style: 'destructive',
+        onPress: () => { leaveGame(); resetGame(); navigation.replace('Lobby') },
+      },
     ])
   }
 
@@ -72,12 +78,16 @@ export default function RoomScreen({ route, navigation }: Props) {
         <View style={s.codeRow}>
           <Text style={s.code}>{code}</Text>
           <TouchableOpacity style={[s.shareBtn, copied && s.shareBtnDone]} onPress={handleCopyFeedback} activeOpacity={0.8}>
-            <Text style={s.shareBtnTxt}>{copied ? '✓  Partilhado' : '📤  Partilhar'}</Text>
+            <Ionicons name={copied ? 'checkmark' : 'share-outline'} size={14} color={copied ? '#fff' : THEME.green} />
+            <Text style={[s.shareBtnTxt, copied && s.shareBtnTxtDone]}>{copied ? 'Partilhado' : 'Partilhar'}</Text>
           </TouchableOpacity>
         </View>
-        <Text style={s.modeLabel}>
-          {is4 ? '👥  4 jogadores — duplas' : '👤  2 jogadores — individual'}
-        </Text>
+        <View style={s.modeRow}>
+          <Ionicons name={is4 ? 'people-outline' : 'person-outline'} size={14} color={THEME.textSoft} />
+          <Text style={s.modeLabel}>
+            {is4 ? '4 jogadores — duplas' : '2 jogadores — individual'}
+          </Text>
+        </View>
       </View>
 
       {/* ── Progresso ── */}
@@ -103,7 +113,6 @@ export default function RoomScreen({ route, navigation }: Props) {
         )}
         {room && Array.from({ length: room.playerCount }, (_, i) => {
           const player = room.players.find(p => p.slot === i)
-          const color  = player ? AVATAR_COLORS[(player.avatar - 1) % AVATAR_COLORS.length] ?? THEME.textMute : undefined
           const isMe   = player?.userId === userId
           const isRoomHost = player?.userId === room.hostId
 
@@ -111,18 +120,21 @@ export default function RoomScreen({ route, navigation }: Props) {
             <View key={i} style={[s.slot, isMe && s.slotMe]}>
               {player ? (
                 <>
-                  <View style={[s.avatar, { backgroundColor: color }]}>
-                    <Text style={s.avatarTxt}>{player.username.charAt(0).toUpperCase()}</Text>
-                  </View>
+                  <PlayerAvatar avatar={player.avatar} size={48} ring={isMe} />
                   <View style={s.playerInfo}>
                     <View style={s.nameRow}>
                       <Text style={s.playerName} numberOfLines={1}>{player.username}</Text>
-                      {isRoomHost && <Text style={s.crownBadge}>👑 Host</Text>}
+                      {isRoomHost && (
+                        <View style={s.crownBadge}>
+                          <Ionicons name="star" size={10} color={THEME.gold} />
+                          <Text style={s.crownBadgeTxt}>Host</Text>
+                        </View>
+                      )}
                       {isMe       && <Text style={s.youBadge}>Eu</Text>}
                     </View>
                     {is4 && (
                       <Text style={s.teamLabel}>
-                        {i % 2 === 0 ? '🔵 Equipa A' : '🔴 Equipa B'}
+                        {i % 2 === 0 ? 'Equipa A' : 'Equipa B'}
                       </Text>
                     )}
                   </View>
@@ -131,13 +143,13 @@ export default function RoomScreen({ route, navigation }: Props) {
               ) : (
                 <>
                   <View style={s.emptyAvatar}>
-                    <Text style={s.emptyAvatarTxt}>?</Text>
+                    <Ionicons name="person-outline" size={22} color={THEME.textMute} />
                   </View>
                   <View style={s.playerInfo}>
                     <Text style={s.waitingTxt}>Aguardando jogador...</Text>
                     {is4 && (
                       <Text style={s.teamLabel}>
-                        {i % 2 === 0 ? '🔵 Equipa A' : '🔴 Equipa B'}
+                        {i % 2 === 0 ? 'Equipa A' : 'Equipa B'}
                       </Text>
                     )}
                   </View>
@@ -154,7 +166,7 @@ export default function RoomScreen({ route, navigation }: Props) {
           <TouchableOpacity style={[s.startBtn, starting && s.off]} onPress={handleStart} disabled={starting} activeOpacity={0.85}>
             {starting
               ? <ActivityIndicator color="#fff" />
-              : <Text style={s.startTxt}>▶  Iniciar Jogo</Text>}
+              : <><Ionicons name="play" size={17} color="#fff" /><Text style={s.startTxt}>Iniciar Jogo</Text></> }
           </TouchableOpacity>
         )}
 
@@ -175,7 +187,8 @@ export default function RoomScreen({ route, navigation }: Props) {
         )}
 
         <TouchableOpacity style={s.leaveBtn} onPress={handleLeave} activeOpacity={0.85}>
-          <Text style={s.leaveTxt}>🚪  Sair da Sala</Text>
+          <Ionicons name="exit-outline" size={16} color={THEME.red} />
+          <Text style={s.leaveTxt}>Sair da Sala</Text>
         </TouchableOpacity>
       </View>
 
@@ -191,9 +204,11 @@ const s = StyleSheet.create({
   codeLabel:     { color: THEME.textMute, fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '700', marginBottom: 6 },
   codeRow:       { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   code:          { color: THEME.text, fontSize: 38, fontWeight: '900', letterSpacing: 7 },
-  shareBtn:      { backgroundColor: THEME.greenL, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: THEME.green },
+  shareBtn:      { backgroundColor: THEME.greenL, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: THEME.green, flexDirection: 'row', alignItems: 'center', gap: 5 },
   shareBtnDone:  { backgroundColor: THEME.green },
   shareBtnTxt:   { color: THEME.green, fontWeight: '700', fontSize: 13 },
+  shareBtnTxtDone: { color: '#fff' },
+  modeRow:       { flexDirection: 'row', alignItems: 'center', gap: 5 },
   modeLabel:     { color: THEME.textSoft, fontSize: 13, fontWeight: '500' },
 
   // Progress
@@ -211,27 +226,25 @@ const s = StyleSheet.create({
   slot:          { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: THEME.surface, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: THEME.border },
   slotMe:        { borderColor: THEME.green, borderWidth: 2, backgroundColor: THEME.greenL },
 
-  avatar:        { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  avatarTxt:     { color: '#fff', fontWeight: '800', fontSize: 20 },
   playerInfo:    { flex: 1, gap: 3 },
   nameRow:       { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
   playerName:    { color: THEME.text, fontSize: 16, fontWeight: '700' },
-  crownBadge:    { backgroundColor: THEME.goldL, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, fontSize: 11, color: THEME.gold, fontWeight: '700', overflow: 'hidden' },
+  crownBadge:    { backgroundColor: THEME.goldL, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, flexDirection: 'row', alignItems: 'center', gap: 3, overflow: 'hidden' },
+  crownBadgeTxt: { fontSize: 11, color: THEME.gold, fontWeight: '700' },
   youBadge:      { backgroundColor: THEME.greenL, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, fontSize: 11, color: THEME.green, fontWeight: '700', overflow: 'hidden' },
   teamLabel:     { color: THEME.textMute, fontSize: 11, fontWeight: '600' },
   readyDot:      { width: 10, height: 10, borderRadius: 5 },
 
   emptyAvatar:   { width: 48, height: 48, borderRadius: 24, borderWidth: 2, borderColor: THEME.border, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
-  emptyAvatarTxt:{ color: THEME.textMute, fontSize: 22 },
   waitingTxt:    { color: THEME.textMute, fontSize: 14, fontStyle: 'italic' },
 
   // Footer
   footer:        { padding: 16, borderTopWidth: 1, borderTopColor: THEME.border, gap: 10 },
-  startBtn:      { backgroundColor: THEME.green, borderRadius: 14, paddingVertical: 17, alignItems: 'center', elevation: 3, shadowColor: THEME.green, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6 },
+  startBtn:      { backgroundColor: THEME.green, borderRadius: 14, paddingVertical: 17, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, elevation: 3, shadowColor: THEME.green, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6 },
   off:           { opacity: 0.5, elevation: 0, shadowOpacity: 0 },
   startTxt:      { color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 0.3 },
   waitBox:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 8 },
   waitTxt:       { color: THEME.textSoft, fontSize: 14, fontStyle: 'italic' },
-  leaveBtn:      { backgroundColor: THEME.surface, borderRadius: 12, paddingVertical: 13, alignItems: 'center', borderWidth: 1.5, borderColor: THEME.red },
+  leaveBtn:      { backgroundColor: THEME.surface, borderRadius: 12, paddingVertical: 13, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: THEME.red },
   leaveTxt:      { color: THEME.red, fontWeight: '700', fontSize: 14 },
 })

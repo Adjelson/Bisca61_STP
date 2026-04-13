@@ -14,11 +14,13 @@ const passwordField = z
 export const RegisterSchema = z.object({
   username: usernameField,
   password: passwordField,
-  avatar: z.number().int().min(1).max(8).default(1),
+  email:    z.string().email('Email inválido').max(120),
+  avatar:   z.number().int().min(1).max(8).default(1),
 })
 
+// Login aceita username OU email
 export const LoginSchema = z.object({
-  username: usernameField,
+  username: z.string().min(1),
   password: passwordField,
 })
 

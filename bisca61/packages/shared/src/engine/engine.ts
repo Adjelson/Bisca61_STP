@@ -1,5 +1,5 @@
 import { buildDeck, shuffleDeck, cardEquals } from './deck'
-import { buildTrumpRotation, nextTrump } from './trump'
+import { buildTrumpRotation } from './trump'
 import { trickPoints, teamOfPlayer } from './scoring'
 import { assertPlayerTurn, assertPhase, assertHasCard } from './validation'
 import { GameError } from './errors'
@@ -108,7 +108,7 @@ export class BiscaEngine {
 
   static swap7(state: InternalGameState, userId: number): InternalGameState {
     assertPhase(state, 'playing')
-    assertPlayerTurn(state, userId)
+    // Any player who holds the 7 of trump can swap — not restricted to current turn
 
     // Clear previous draw reveals as soon as any action is taken
     const clearedDrawn: Record<number, Card | null> = {}
@@ -119,21 +119,17 @@ export class BiscaEngine {
       throw new GameError('NO_TRUMP_CARD', 'No visible trump card to swap with')
     }
 
-    // A carta visível deve ser do mesmo naipe que o trunfo atual
-    // (7 de Copas só troca por carta de Copas)
-    if (state.trumpCard.s !== state.trumpSuit) {
-      throw new GameError('TRUMP_SUIT_MISMATCH', 'Trump card suit does not match current trump suit')
-    }
-
+    // Always derive the trump suit from the face-up card itself — source of truth
+    const faceUpSuit = state.trumpCard.s
     const hand = state._hands[userId] ?? []
-    const sevenOfTrump: Card = { s: state.trumpSuit, r: '7' }
+    const sevenOfTrump: Card = { s: faceUpSuit, r: '7' }
     const sevenIdx = hand.findIndex(c => cardEquals(c, sevenOfTrump))
 
     if (sevenIdx === -1) {
       throw new GameError('NO_SEVEN_OF_TRUMP', 'Player does not have the 7 of trump')
     }
 
-    // Swap
+    // Swap: player gives their 7, takes the face-up trump card
     const newHand = [...hand]
     const oldTrump = state.trumpCard
     newHand[sevenIdx] = oldTrump
@@ -142,9 +138,10 @@ export class BiscaEngine {
 
     return {
       ...state,
-      trumpCard: null,           // face-up slot is now empty
-      trumpHorizontal: sevenOfTrump, // 7 goes horizontal on deck
-      _hands: newHands,
+      trumpSuit:       faceUpSuit,    // keep consistent with the card that just left
+      trumpCard:       null,          // face-up slot is now empty
+      trumpHorizontal: sevenOfTrump,  // 7 goes horizontal on deck
+      _hands:          newHands,
     }
   }
 
@@ -255,17 +252,13 @@ export class BiscaEngine {
 
     // After draws: if deck still has cards, reveal new trump
     let newTrumpSuit = trumpSuit
-    let newTrumpRotation = [...state.trumpRotation]
-    let newTrumpIdx = state.trumpIdx
+    const newTrumpRotation = [...state.trumpRotation]
+    const newTrumpIdx = state.trumpIdx
 
     if (newDeck.length > 0 && newTrumpCard === null) {
-      // Advance trump rotation
-      const { suit, idx } = nextTrump(newTrumpRotation, newTrumpIdx)
-      newTrumpSuit = suit
-      newTrumpIdx = idx
-
-      // Reveal new trump card from deck
+      // Reveal new trump card — trump suit follows the face-up card
       newTrumpCard = newDeck.shift()!
+      newTrumpSuit = newTrumpCard.s
     }
 
     // Record trick history

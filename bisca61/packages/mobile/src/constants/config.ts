@@ -1,5 +1,5 @@
 // ── App identity ──────────────────────────────────────────────────────────────
-export const APP_NAME    = 'Bisca 61'
+export const APP_NAME    = 'BISCA61STP'
 export const APP_AUTHOR  = 'Adjelson Neves'
 export const COPYRIGHT   = '© 2024–2026 Adjelson Neves'
 export const APP_TAGLINE = 'Nova Manilha · Multijogador'
@@ -56,6 +56,9 @@ export const AVATAR_COLORS = [
   '#EF4444', '#3B82F6', '#10B981', '#F59E0B',
   '#8B5CF6', '#06B6D4', '#F97316', '#6366F1',
 ]
+
+// 8 avatar characters — index matches avatar number (1-based)
+export const AVATARS = ['🦁', '🐺', '🦊', '🐻', '🐯', '🦅', '🐸', '🐧']
 
 // ── Icons (Unicode / emoji — no external lib needed) ──────────────────────────
 export const ICONS = {

@@ -1,15 +1,17 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
   StyleSheet, Alert, ActivityIndicator, RefreshControl, Image,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import { PlayerAvatar } from '../components/PlayerAvatar'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { RootStackParamList } from '../../App'
 import { useAuthStore, getToken } from '../store/authStore'
-import { API_URL, AVATAR_COLORS, THEME, COPYRIGHT } from '../constants/config'
+import { API_URL, THEME, COPYRIGHT } from '../constants/config'
 import { mapError } from '../utils/errors'
-import { startAmbient, stopAmbient } from '../utils/ambientSound'
+import { startAmbient, stopAmbient, setAmbientMuted } from '../utils/ambientSound'
 import type { RoomInfo } from '../types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Lobby'>
@@ -26,12 +28,19 @@ export default function LobbyScreen({ navigation }: Props) {
   const [refresh,setRefresh] = useState(false)
   const [status, setStatus]  = useState<ServerStatus>('checking')
   const [createErr, setCreateErr] = useState<string | null>(null)
+  const [ambientMuted, setAmbientMutedState] = useState(false)
 
-  // Ambient sound
+  // Ambient sound lifecycle
   useEffect(() => {
     startAmbient()
     return () => { stopAmbient() }
   }, [])
+
+  function toggleAmbient() {
+    const next = !ambientMuted
+    setAmbientMutedState(next)
+    setAmbientMuted(next)
+  }
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -83,7 +92,6 @@ export default function LobbyScreen({ navigation }: Props) {
     ])
   }
 
-  const color = AVATAR_COLORS[(avatar - 1) % AVATAR_COLORS.length] ?? THEME.red
   const offline = status === 'offline'
 
   return (
@@ -94,9 +102,13 @@ export default function LobbyScreen({ navigation }: Props) {
         <View style={s.brand}>
           <Image source={LOGO} style={s.brandLogo} resizeMode="contain" />
           <View>
-            <Text style={s.brandName}>Bisca 61</Text>
+            <Text style={s.brandName}>BISCA61STP</Text>
             <View style={s.statusRow}>
-              <Text style={[s.dot, status === 'online' ? s.dotOn : status === 'offline' ? s.dotOff : s.dotChk]}>●</Text>
+              <Ionicons
+                name={status === 'online' ? 'wifi' : status === 'offline' ? 'cloud-offline-outline' : 'ellipse-outline'}
+                size={10}
+                color={status === 'online' ? THEME.green : status === 'offline' ? THEME.red : THEME.gold}
+              />
               <Text style={s.statusTxt}>
                 {status === 'online' ? 'Online' : status === 'offline' ? 'Offline' : 'A verificar...'}
               </Text>
@@ -104,11 +116,18 @@ export default function LobbyScreen({ navigation }: Props) {
           </View>
         </View>
         <View style={s.headerRight}>
-          <TouchableOpacity style={s.iconBtn} onPress={() => navigation.navigate('Rules')}>
-            <Text style={s.iconBtnTxt}>📖</Text>
+          <TouchableOpacity style={s.iconBtn} onPress={toggleAmbient}>
+            <Ionicons
+              name={ambientMuted ? 'volume-mute' : 'volume-medium'}
+              size={20}
+              color={ambientMuted ? THEME.textMute : THEME.textSoft}
+            />
           </TouchableOpacity>
-          <TouchableOpacity style={[s.avatarBtn, { backgroundColor: color }]} onPress={handleLogout}>
-            <Text style={s.avatarBtnTxt}>{(username ?? '?').charAt(0).toUpperCase()}</Text>
+          <TouchableOpacity style={s.iconBtn} onPress={() => navigation.navigate('Rules')}>
+            <Ionicons name="book-outline" size={20} color={THEME.textSoft} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout} activeOpacity={0.8}>
+            <PlayerAvatar avatar={avatar ?? 1} size={38} />
           </TouchableOpacity>
         </View>
       </View>
@@ -116,14 +135,16 @@ export default function LobbyScreen({ navigation }: Props) {
       {/* ── Banners ── */}
       {offline && (
         <View style={s.offlineBanner}>
-          <Text style={s.offlineTxt}>⚠  Sem ligação ao servidor — a tentar reconectar...</Text>
+          <Ionicons name="cloud-offline-outline" size={15} color="#92400E" />
+          <Text style={s.offlineTxt}> Sem ligação ao servidor — a tentar reconectar...</Text>
         </View>
       )}
       {createErr && (
         <View style={s.errBanner}>
-          <Text style={s.errTxt}>⚠  {createErr}</Text>
+          <Ionicons name="alert-circle-outline" size={15} color={THEME.red} />
+          <Text style={s.errTxt}>{createErr}</Text>
           <TouchableOpacity onPress={() => setCreateErr(null)} hitSlop={10}>
-            <Text style={s.errClose}>✕</Text>
+            <Ionicons name="close" size={18} color={THEME.red} />
           </TouchableOpacity>
         </View>
       )}
@@ -143,10 +164,10 @@ export default function LobbyScreen({ navigation }: Props) {
           <>
             {/* ── Criar Sala ── */}
             <View style={s.section}>
-              <SectionHeader icon="🎮" title="Nova Partida" />
+              <SectionHeader icon="game-controller-outline" title="Nova Partida" />
               <View style={s.createRow}>
                 <CreateBtn
-                  label="2 Jogadores" icon="👤"
+                  label="2 Jogadores" icon="person-outline"
                   sub="Individual"
                   color={THEME.green}
                   disabled={loading || offline}
@@ -154,7 +175,7 @@ export default function LobbyScreen({ navigation }: Props) {
                   loading={loading}
                 />
                 <CreateBtn
-                  label="4 Jogadores" icon="👥"
+                  label="4 Jogadores" icon="people-outline"
                   sub="Em Duplas"
                   color={THEME.blue}
                   disabled={loading || offline}
@@ -165,7 +186,7 @@ export default function LobbyScreen({ navigation }: Props) {
 
             {/* ── Entrar com Código ── */}
             <View style={s.section}>
-              <SectionHeader icon="🔑" title="Entrar com Código" />
+              <SectionHeader icon="key-outline" title="Entrar com Código" />
               <View style={s.codeRow}>
                 <TextInput
                   style={s.codeInput}
@@ -185,7 +206,7 @@ export default function LobbyScreen({ navigation }: Props) {
                   disabled={offline}
                   activeOpacity={0.85}
                 >
-                  <Text style={s.joinBtnTxt}>Entrar →</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -193,9 +214,10 @@ export default function LobbyScreen({ navigation }: Props) {
             {/* ── Salas Abertas ── */}
             <View style={[s.section, { paddingBottom: 0 }]}>
               <View style={s.roomsHeader}>
-                <SectionHeader icon="🃏" title="Salas Abertas" />
-                <TouchableOpacity onPress={fetchRooms} hitSlop={10}>
-                  <Text style={s.refreshBtn}>↺ Atualizar</Text>
+                <SectionHeader icon="albums-outline" title="Salas Abertas" />
+                <TouchableOpacity style={s.refreshBtn} onPress={fetchRooms} hitSlop={10}>
+                  <Ionicons name="refresh-outline" size={14} color={THEME.green} />
+                  <Text style={s.refreshTxt}>Atualizar</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -204,7 +226,7 @@ export default function LobbyScreen({ navigation }: Props) {
         renderItem={({ item }) => <RoomCard room={item} onPress={() => navigation.navigate('Room', { code: item.code })} />}
         ListEmptyComponent={
           <View style={s.emptyBox}>
-            <Text style={s.emptyIcon}>🃏</Text>
+            <Ionicons name="albums-outline" size={44} color={THEME.border} style={{ marginBottom: 12 }} />
             <Text style={s.emptyTxt}>
               {status === 'checking' ? 'A carregar salas...' : 'Nenhuma sala aberta.'}
             </Text>
@@ -228,17 +250,17 @@ export default function LobbyScreen({ navigation }: Props) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function SectionHeader({ icon, title }: { icon: string; title: string }) {
+function SectionHeader({ icon, title }: { icon: React.ComponentProps<typeof Ionicons>['name']; title: string }) {
   return (
     <View style={sh.row}>
-      <Text style={sh.icon}>{icon}</Text>
+      <Ionicons name={icon} size={14} color={THEME.textMute} />
       <Text style={sh.title}>{title}</Text>
     </View>
   )
 }
 
 function CreateBtn({ label, icon, sub, color, disabled, onPress, loading }: {
-  label: string; icon: string; sub: string; color: string
+  label: string; icon: React.ComponentProps<typeof Ionicons>['name']; sub: string; color: string
   disabled: boolean; onPress: () => void; loading?: boolean
 }) {
   return (
@@ -251,7 +273,7 @@ function CreateBtn({ label, icon, sub, color, disabled, onPress, loading }: {
       {loading
         ? <ActivityIndicator color="#fff" size="small" />
         : <>
-            <Text style={cb.icon}>{icon}</Text>
+            <Ionicons name={icon} size={24} color="#fff" />
             <Text style={cb.label}>{label}</Text>
             <Text style={cb.sub}>{sub}</Text>
           </>
@@ -272,7 +294,8 @@ function RoomCard({ room, onPress }: { room: RoomInfo; onPress: () => void }) {
         <View style={rc.codeRow}>
           <Text style={rc.code}>{room.code}</Text>
           <View style={rc.modeBadge}>
-            <Text style={rc.modeTxt}>{total === 4 ? '👥 Duplas' : '👤 Individual'}</Text>
+            <Ionicons name={total === 4 ? 'people-outline' : 'person-outline'} size={11} color={THEME.green} />
+            <Text style={rc.modeTxt}>{total === 4 ? ' Duplas' : ' Individual'}</Text>
           </View>
         </View>
         {/* Player slots mini indicator */}
@@ -290,7 +313,7 @@ function RoomCard({ room, onPress }: { room: RoomInfo; onPress: () => void }) {
       </View>
       <View style={rc.right}>
         <Text style={rc.joinTxt}>Entrar</Text>
-        <Text style={rc.arrow}>→</Text>
+        <Ionicons name="chevron-forward" size={18} color={THEME.green} />
       </View>
     </TouchableOpacity>
   )
@@ -306,28 +329,21 @@ const s = StyleSheet.create({
   brandLogo:    { width: 36, height: 36 },
   brandName:    { color: THEME.text, fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
   statusRow:    { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
-  dot:          { fontSize: 8 },
-  dotOn:        { color: THEME.green },
-  dotOff:       { color: THEME.red },
-  dotChk:       { color: THEME.gold },
   statusTxt:    { color: THEME.textMute, fontSize: 11 },
   headerRight:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconBtn:      { width: 38, height: 38, borderRadius: 19, backgroundColor: THEME.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: THEME.border },
-  iconBtnTxt:   { fontSize: 17 },
-  avatarBtn:    { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  avatarBtnTxt: { color: '#fff', fontWeight: '800', fontSize: 16 },
 
   offlineBanner:{ backgroundColor: '#FEF3C7', padding: 10, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#FDE68A' },
   offlineTxt:   { color: '#92400E', fontSize: 13, fontWeight: '600' },
   errBanner:    { backgroundColor: '#FEF2F2', padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderLeftWidth: 3, borderLeftColor: THEME.red },
-  errTxt:       { color: THEME.red, flex: 1, fontSize: 13 },
-  errClose:     { color: THEME.red, fontSize: 18, paddingLeft: 10 },
+  errTxt:       { color: THEME.red, flex: 1, fontSize: 13, marginLeft: 8 },
 
   list:         { paddingBottom: 16 },
 
   section:      { padding: 16, borderBottomWidth: 1, borderBottomColor: THEME.border },
   roomsHeader:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  refreshBtn:   { color: THEME.green, fontSize: 13, fontWeight: '700' },
+  refreshBtn:   { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  refreshTxt:   { color: THEME.green, fontSize: 13, fontWeight: '700' },
 
   createRow:    { flexDirection: 'row', gap: 12, marginTop: 10 },
 
@@ -338,7 +354,6 @@ const s = StyleSheet.create({
   btnOff:       { opacity: 0.4 },
 
   emptyBox:     { alignItems: 'center', paddingVertical: 40, paddingHorizontal: 16 },
-  emptyIcon:    { fontSize: 44, marginBottom: 12 },
   emptyTxt:     { color: THEME.textSoft, fontSize: 15, fontWeight: '600' },
   emptyHint:    { color: THEME.textMute, fontSize: 13, marginTop: 6 },
 
@@ -348,15 +363,13 @@ const s = StyleSheet.create({
 })
 
 const sh = StyleSheet.create({
-  row:   { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
-  icon:  { fontSize: 16 },
+  row:   { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
   title: { color: THEME.textSoft, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
 })
 
 const cb = StyleSheet.create({
-  btn:   { flex: 1, borderRadius: 14, paddingVertical: 16, alignItems: 'center', gap: 3, elevation: 2, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+  btn:   { flex: 1, borderRadius: 14, paddingVertical: 16, alignItems: 'center', gap: 4, elevation: 2, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
   off:   { opacity: 0.4, elevation: 0, shadowOpacity: 0 },
-  icon:  { fontSize: 22 },
   label: { color: '#fff', fontWeight: '800', fontSize: 14 },
   sub:   { color: 'rgba(255,255,255,0.75)', fontSize: 11 },
 })
@@ -366,7 +379,7 @@ const rc = StyleSheet.create({
   left:     { flex: 1, gap: 6 },
   codeRow:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
   code:     { color: THEME.text, fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  modeBadge:{ backgroundColor: THEME.greenL, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
+  modeBadge:{ backgroundColor: THEME.greenL, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, flexDirection: 'row', alignItems: 'center' },
   modeTxt:  { color: THEME.green, fontSize: 11, fontWeight: '700' },
   slots:    { flexDirection: 'row', alignItems: 'center', gap: 4 },
   slot:     { width: 10, height: 10, borderRadius: 5 },
@@ -378,5 +391,4 @@ const rc = StyleSheet.create({
   barEmpty: { backgroundColor: THEME.border },
   right:    { alignItems: 'center', paddingLeft: 12 },
   joinTxt:  { color: THEME.green, fontWeight: '800', fontSize: 13 },
-  arrow:    { color: THEME.green, fontSize: 18, fontWeight: '700' },
 })

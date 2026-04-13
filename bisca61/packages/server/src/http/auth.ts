@@ -13,16 +13,17 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(400).send({ error: msgs[0] ?? 'Dados inválidos' })
     }
 
-    const { username, password, avatar } = body.data
+    const { username, password, avatar, email } = body.data
 
-    const existing = await prisma.user.findUnique({ where: { username } })
-    if (existing) {
-      return reply.status(409).send({ error: 'USERNAME_TAKEN' })
-    }
+    const existing = await prisma.user.findFirst({
+      where: { OR: [{ username }, { email }] },
+    })
+    if (existing?.username === username) return reply.status(409).send({ error: 'USERNAME_TAKEN' })
+    if (existing?.email    === email)   return reply.status(409).send({ error: 'EMAIL_TAKEN' })
 
     const hash = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({
-      data: { username, password: hash, avatar },
+      data: { username, password: hash, avatar, email },
     })
 
     const token = await createSession({ userId: user.id, username: user.username, avatar: user.avatar })
@@ -48,7 +49,11 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { username, password } = body.data
 
-    const user = await prisma.user.findUnique({ where: { username } })
+    // Accept login with username OR email in the same field
+    const isEmail = username.includes('@')
+    const user = await prisma.user.findFirst({
+      where: isEmail ? { email: username } : { username },
+    })
     if (!user) {
       return reply.status(401).send({ error: 'INVALID_CREDENTIALS' })
     }

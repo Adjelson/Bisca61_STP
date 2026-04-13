@@ -7,17 +7,16 @@ interface Props {
   trumpCard:       Card | null
   trumpHorizontal: Card | null
   trumpSuit:       Suit
-  trumpRotation:   Suit[]
-  trumpIdx:        number
   deckCount:       number
   isLastTrump?:    boolean
 }
 
-export function TrumpArea({ trumpCard, trumpHorizontal, trumpSuit, trumpRotation, trumpIdx, deckCount, isLastTrump }: Props) {
-  const nextSuit = trumpRotation[(trumpIdx + 1) % trumpRotation.length]
-  const symbol   = SUIT_SYMBOLS[trumpSuit] ?? '?'
-  const nextSym  = SUIT_SYMBOLS[nextSuit ?? trumpSuit] ?? '?'
-  const isRedTrump = trumpSuit === 'C' || trumpSuit === 'O'
+export function TrumpArea({ trumpCard, trumpHorizontal, trumpSuit, deckCount, isLastTrump }: Props) {
+  // Badge always uses the face-up card's suit when a card is visible,
+  // so the symbol and the card are always the same suit.
+  const displaySuit = trumpCard ? trumpCard.s : trumpSuit
+  const symbol      = SUIT_SYMBOLS[displaySuit] ?? '?'
+  const isRedTrump  = displaySuit === 'C' || displaySuit === 'O'
 
   return (
     <View style={s.container}>
@@ -27,13 +26,7 @@ export function TrumpArea({ trumpCard, trumpHorizontal, trumpSuit, trumpRotation
         <Text style={s.trumpLabel}>{isLastTrump ? 'ÚLTIMO' : 'TRUNFO'}</Text>
       </View>
 
-      {/* Próximo trunfo */}
-      {nextSuit && nextSuit !== trumpSuit && (
-        <View style={s.nextBadge}>
-          <Text style={s.nextLabel}>próx.</Text>
-          <Text style={s.nextSymbol}>{nextSym}</Text>
-        </View>
-      )}
+   
 
       {/* Carta de trunfo visível + monte */}
       <View style={s.deckArea}>

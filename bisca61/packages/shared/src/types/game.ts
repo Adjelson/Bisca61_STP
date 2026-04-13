@@ -37,6 +37,8 @@ export interface GameState {
   lastDrawn: Record<number, Card | null> // card each player drew this trick (brief reveal)
   lastTrick: TrickHistory | null
   winner: 0 | 1 | -1 | null
+  /** Unix ms timestamp for when the current turn started — injected by the server, not by the engine. */
+  turnStartedAt?: number
 }
 
 export interface InternalGameState extends Omit<GameState, 'hand' | 'handCounts' | 'deckCount' | 'allHands' | 'lastDrawn'> {

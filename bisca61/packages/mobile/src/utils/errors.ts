@@ -2,7 +2,8 @@
 const ERROR_MAP: Record<string, string> = {
   // Auth
   USERNAME_TAKEN:       'Este nome de utilizador já está em uso.',
-  INVALID_CREDENTIALS:  'Nome ou password incorretos.',
+  EMAIL_TAKEN:          'Este email já está registado.',
+  INVALID_CREDENTIALS:  'Nome de utilizador, email ou password incorretos.',
   UNAUTHORIZED:         'Sessão expirada. Por favor, entra novamente.',
 
   // Sala

@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Platform } from 'react-native'
+import { useRef, useEffect } from 'react'
+import { View, Text, StyleSheet, Platform, Animated } from 'react-native'
 import { CardView } from './CardView'
 import type { TablePlay } from '../types'
 import { THEME } from '../constants/config'
@@ -36,6 +37,29 @@ function findWinner(plays: TablePlay[], trumpSuit: string): number | null {
   return winner.userId
 }
 
+function AnimatedTableCard({ play, isWinning, isMe }: { play: TablePlay; isWinning: boolean; isMe: boolean }) {
+  const anim = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.spring(anim, {
+      toValue:         1,
+      useNativeDriver: true,
+      tension:         70,
+      friction:        8,
+    }).start()
+  }, [])
+
+  const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [60, 0] })
+  const scale      = anim.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] })
+
+  return (
+    <Animated.View style={[s.playSlot, isWinning && s.winSlot, { transform: [{ translateY }, { scale }], opacity: anim }]}>
+      <CardView card={play.card} size="table" glow={isWinning} />
+      {isMe && <Text style={s.meLabel}>Tu</Text>}
+    </Animated.View>
+  )
+}
+
 const SHADOW = Platform.select({
   web:     { boxShadow: '0 2px 12px rgba(0,0,0,0.08)' } as object,
   default: { elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 6 },
@@ -53,18 +77,11 @@ export function TableView({ table, trumpSuit, myUserId }: Props) {
         </View>
       ) : (
         <View style={s.cards}>
-          {table.map((play, i) => {
+          {table.map((play) => {
             const isWinning = play.userId === winnerId && table.length > 1
-            const isMe = play.userId === myUserId
+            const isMe      = play.userId === myUserId
             return (
-              <View key={i} style={[s.playSlot, isWinning && s.winSlot]}>
-                <CardView
-                  card={play.card}
-                  size="table"
-                  glow={isWinning}
-                />
-                {isMe && <Text style={s.meLabel}>Tu</Text>}
-              </View>
+              <AnimatedTableCard key={play.userId} play={play} isWinning={isWinning} isMe={isMe} />
             )
           })}
         </View>
