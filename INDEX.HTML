@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu 3 - Saladas & Acompanhamentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .clean-card {
+            border: 1px solid #ecfdf5;
+            transition: all 0.3s ease;
+        }
+
+        .clean-card:hover {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+
+    <!-- Menu Container -->
+    <div class="max-w-3xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="flex justify-center mb-3">
+                <i data-lucide="leaf" class="text-emerald-500 w-8 h-8"></i>
+            </div>
+            <h2 class="text-xs text-emerald-600 font-bold tracking-[0.2em] uppercase mb-2">Menu 3</h2>
+            <h1 class="text-3xl md:text-4xl text-gray-900 font-semibold mb-2">Saladas & <span
+                    class="text-emerald-700">Acompanhamentos</span></h1>
+            <p class="text-gray-500 italic font-light">Opções leves e complementares para o seu equilíbrio</p>
+            <div class="w-16 h-1 bg-emerald-500 mx-auto mt-6 rounded-full"></div>
+        </header>
+
+        <!-- Menu Content -->
+        <div class="space-y-12">
+
+            <!-- Seção: Saladas -->
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="shrub" class="text-emerald-600 w-5 h-5"></i>
+                    <h2 class="text-2xl text-gray-800">Saladas Frescas</h2>
+                </div>
+
+                <div class="grid gap-4">
+                    <div class="clean-card p-4 rounded-xl flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Mix Tropical</h4>
+                            <p class="text-sm text-gray-600">Folhas nobres, cubos de manga, castanhas crocantes e molho
+                                de mostarda e mel.</p>
+                        </div>
+                    </div>
+                    <div class="clean-card p-4 rounded-xl flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Ceasar Artesanal</h4>
+                            <p class="text-sm text-gray-600">Alface americana, croutons da casa, parmesão ralado e o
+                                legítimo molho Ceasar.</p>
+                        </div>
+                    </div>
+                    <div class="clean-card p-4 rounded-xl flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Salada Grega</h4>
+                            <p class="text-sm text-gray-600">Tomates cereja, pepino, azeitonas pretas, cebola roxa e
+                                queijo branco temperado.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção: Tortas de Liquidificador -->
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="pie-chart" class="text-emerald-600 w-5 h-5"></i>
+                    <h2 class="text-2xl text-gray-800">Tortas Caseiras</h2>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="border-l-2 border-emerald-100 pl-4 py-2">
+                        <h4 class="font-semibold text-gray-900">Frango com Milho</h4>
+                        <p class="text-xs text-gray-500 uppercase mt-1">Massa leve e fofinha</p>
+                    </div>
+                    <div class="border-l-2 border-emerald-100 pl-4 py-2">
+                        <h4 class="font-semibold text-gray-900">Atum com Azeitonas</h4>
+                        <p class="text-xs text-gray-500 uppercase mt-1">Sabor intenso e prático</p>
+                    </div>
+                    <div class="border-l-2 border-emerald-100 pl-4 py-2">
+                        <h4 class="font-semibold text-gray-900">Legumes Selecionados</h4>
+                        <p class="text-xs text-gray-500 uppercase mt-1">Mix de cores e nutrientes</p>
+                    </div>
+                    <div class="border-l-2 border-emerald-100 pl-4 py-2">
+                        <h4 class="font-semibold text-gray-900">Queijo e Presunto</h4>
+                        <p class="text-xs text-gray-500 uppercase mt-1">O favorito de todas as horas</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção: Acompanhamentos -->
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="utensils" class="text-emerald-600 w-5 h-5"></i>
+                    <h2 class="text-2xl text-gray-800">Acompanhamentos</h2>
+                </div>
+                <div class="bg-gray-50 rounded-2xl p-6">
+                    <ul class="grid sm:grid-cols-2 gap-y-4 gap-x-8">
+                        <li class="flex items-center gap-2 text-gray-700">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                            Arroz Branco Soltinho
+                        </li>
+                        <li class="flex items-center gap-2 text-gray-700">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                            Arroz à Grega
+                        </li>
+                        <li class="flex items-center gap-2 text-gray-700">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                            Feijão Caseiro Temperado
+                        </li>
+                        <li class="flex items-center gap-2 text-gray-700">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                            Farofa Crocante de Bacon
+                        </li>
+                        <li class="flex items-center gap-2 text-gray-700">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                            Purê de Batata Aveludado
+                        </li>
+                        <li class="flex items-center gap-2 text-gray-700">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                            Legumes no Vapor
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Adicionais / Combos -->
+            <div class="bg-emerald-600 text-white rounded-2xl p-6 text-center shadow-lg shadow-emerald-100">
+                <h3 class="text-xl font-semibold mb-2">Combo Equilíbrio</h3>
+                <p class="text-emerald-100 text-sm mb-4">Combine 1 Salada + 1 Torta + 1 Acompanhamento para uma refeição
+                    completa.</p>
+                <div
+                    class="inline-block border border-emerald-400 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+                    Opção Sugerida
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center">
+            <div class="flex justify-center gap-6 mb-4 opacity-30">
+                <i data-lucide="sun" class="w-5 h-5"></i>
+                <i data-lucide="cloud" class="w-5 h-5"></i>
+                <i data-lucide="wind" class="w-5 h-5"></i>
+            </div>
+            <p class="text-gray-400 text-xs tracking-widest uppercase">&copy; 2024 Gastronomia Leve & Saudável</p>
+        </footer>
+
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
